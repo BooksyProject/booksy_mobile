@@ -3,6 +3,7 @@ import { SplashScreen, Stack } from "expo-router";
 import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { hideAsync } from "expo-splash-screen";
+import "@/global.css";
 // import { ThemeProvider } from "@/context/ThemeContext";
 // import { AuthProvider } from "@/context/AuthContext";
 // import { ChatProvider } from "@/context/ChatContext";
