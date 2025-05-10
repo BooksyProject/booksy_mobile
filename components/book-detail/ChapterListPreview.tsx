@@ -15,9 +15,13 @@ export default function ChapterListPreview({ chapters, onSeeAll }: Props) {
   return (
     <View className="mt-6 px-4">
       <View className="flex-row justify-between mb-2">
-        <Text className="font-bold text-base">{chapters.length} chapters</Text>
+        <Text className="font-msemibold text-lg">
+          {chapters.length} chapters
+        </Text>
         <TouchableOpacity onPress={onSeeAll}>
-          <Text className="text-red-500">See all</Text>
+          <Text className="text-custom-red font-mregular text-base">
+            See all
+          </Text>
         </TouchableOpacity>
       </View>
       {chapters.map((ch, index) => (
@@ -25,8 +29,12 @@ export default function ChapterListPreview({ chapters, onSeeAll }: Props) {
           key={index}
           className="flex-row justify-between py-2 border-b border-gray-200"
         >
-          <Text className="text-sm text-gray-800">{ch.title}</Text>
-          <Text className="text-sm text-gray-500">{ch.date}</Text>
+          <Text className="text-sm font-mregular  text-light-500">
+            {ch.title}
+          </Text>
+          <Text className="text-sm font-mregular text-light-500">
+            {ch.date}
+          </Text>
         </View>
       ))}
     </View>

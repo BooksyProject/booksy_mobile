@@ -10,18 +10,21 @@ module.exports = {
           100: "#FFAABB",
         },
         dark: {
-          100: "#FFFFFF",
+          100: "#F1EEE3",
           200: "#202020",
           300: "#252525",
           400: "#191919",
         },
         light: {
-          500: "#92898A",
+          500: "#26212A",
           600: "#E4DEE4",
           700: "#FFFFFF",
           800: "#F4F3F3",
         },
         "accent-blue": "#1DA1F2",
+        "book-detail": "#B34136",
+        "book-background": "#F1EEE3",
+        "custom-red": "#B34136",
       },
       fontFamily: {
         mthin: ["Montserrat-Thin", "sans-serif"],

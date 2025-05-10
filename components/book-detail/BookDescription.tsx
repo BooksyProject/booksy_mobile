@@ -8,7 +8,9 @@ export default function BookDescription({
 }) {
   return (
     <View className="mt-4 px-4">
-      <Text className="text-base text-gray-700 leading-6">{description}</Text>
+      <Text className="text-base font-mregular text-light-500 leading-6">
+        {description}
+      </Text>
     </View>
   );
 }
