@@ -7,7 +7,7 @@ interface ReadNowButtonProps {
 
 export default function ReadNowButton({
   onPress,
-  hasProgress = false,
+  hasProgress,
 }: ReadNowButtonProps) {
   return (
     <TouchableOpacity
