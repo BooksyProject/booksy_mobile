@@ -23,7 +23,7 @@ interface ChapterData {
   content: string;
 }
 
-const IMAGE_BASE_URL = "http://192.168.31.244:3000/"; // 🔁 Cập nhật đúng URL server của bạn
+const IMAGE_BASE_URL = "http://192.168.1.24:3000/"; // 🔁 Cập nhật đúng URL server của bạn
 
 export default function ReaderScreen() {
   const { width } = useWindowDimensions();
@@ -32,7 +32,7 @@ export default function ReaderScreen() {
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
 
-  const { save } = useReadingProgressManager(bookId as string);
+  const { save, updateProgress } = useReadingProgressManager(bookId as string);
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,20 +77,31 @@ export default function ReaderScreen() {
     fetchChapterTotal();
   }, [bookId, chapterNumber]);
 
-  // Lưu tiến trình khi rời màn hình
+  // Lưu tiến trình khi rời màn hình hoặc khi chuyển sang chương khác
   useEffect(() => {
+    if (!chapterData?._id) return;
+
+    // Save the reading progress whenever the chapter data changes
+    const saveProgress = () => {
+      save({
+        chapterId: chapterData._id,
+        chapterNumber: chapterData.chapterNumber,
+        percentage: 100, // We assume the chapter is fully read after it loads
+      });
+    };
+
+    saveProgress(); // Immediately save the progress when the chapter is loaded
+
     return () => {
-      if (chapterData?._id) {
-        save({
-          chapterId: chapterData._id,
-          chapterNumber: chapterData.chapterNumber,
-          percentage: 100,
-        });
-      }
+      saveProgress(); // Save progress when navigating away or unmounting
     };
   }, [chapterData]);
 
   const goToChapter = (newChapter: number) => {
+    if (chapterData?._id) {
+      // Save the progress for the current chapter before navigating
+      updateProgress(chapterData._id, chapterData.chapterNumber, 100); // Assume 100% progress when chapter is fully loaded
+    }
     router.replace({
       pathname: "/reader/[bookId]",
       params: {
@@ -133,7 +144,7 @@ export default function ReaderScreen() {
       </ScrollView>
 
       {/* Pagination nút chương */}
-      <View className="px-6 border-t border-gray-200 bg-white">
+      <View className="px-6 mb-20 border-t border-gray-200 bg-white">
         <Pagination
           currentPage={chapterNumber}
           totalPages={chapterTotal || 1}
