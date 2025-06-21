@@ -1,19 +1,19 @@
 // colors.js
 export const colors = {
   primary: {
-    100: "#FFAABB",
+    100: "#B34136",
   },
   dark: {
-    100: "#FFFFFF",
-    200: "#202020",
+    100: "#F1EEE3",
+    200: "#26212A",
     300: "#252525",
     400: "#191919",
   },
   light: {
-    500: "#92898A",
-    600: "#E4DEE4",
-    700: "#FFFFFF",
-    800: "#F4F3F3",
+    100: "#26212A",
+    200: "#F1EEE3",
+    300: "#FFFFFF",
+    400: "#F4F3F3",
   },
   "accent-blue": "#1DA1F2",
   "title-pink": "#AF9FA5",
