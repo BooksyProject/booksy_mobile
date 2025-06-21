@@ -1,14 +1,11 @@
 const { getDefaultConfig } = require("expo/metro-config");
 const { withNativeWind } = require("nativewind/metro");
 
-const defaultConfig = getDefaultConfig(__dirname);
+const config = getDefaultConfig(__dirname);
 
-const config = {
-  resolver: {
-    assetExts: [...defaultConfig.resolver.assetExts, "epub", "pdf"],
-  },
-};
+// Thêm định dạng file tùy chỉnh (nếu bạn cần .epub, .pdf)
+config.resolver.assetExts.push("epub", "pdf");
 
-module.exports = mergeConfig(defaultConfig, config);
-
-module.exports = withNativeWind(config, { input: "./global.css" });
+module.exports = withNativeWind(config, {
+  input: "./global.css",
+});

@@ -13,6 +13,7 @@ import { useRouter } from "expo-router";
 import { login, getMyProfile } from "@/lib/service/user.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/contexts/ThemeContext";
+import Input from "@/components/ui/input";
 
 const SignIn = () => {
   // const { setProfile } = useAuth();
@@ -96,14 +97,14 @@ const SignIn = () => {
                     Phone Number <Text style={{ color: "red" }}>*</Text>
                   </Text>
                 </View>
-                {/* <MyInput
+                <Input
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
                   placeholder="Phone number"
                   height={56}
                   fontSize={14}
                   fontFamily="Montserrat-Regular"
-                /> */}
+                />
               </View>
 
               {/* Password Input */}
@@ -129,7 +130,7 @@ const SignIn = () => {
                     Password <Text style={{ color: "red" }}>*</Text>
                   </Text>
                 </View>
-                {/* <MyInput
+                <Input
                   value={password}
                   onChangeText={setPassword}
                   placeholder="Password"
@@ -137,7 +138,7 @@ const SignIn = () => {
                   height={56}
                   fontSize={14}
                   fontFamily="Montserrat-Regular"
-                /> */}
+                />
               </View>
             </View>
             <View className="w-full space-y-5">
