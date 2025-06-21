@@ -13,3 +13,9 @@ export async function likeBook(bookId: String, userId: String) {
   if (!res.ok) throw new Error("Failed to like book");
   return await res.json();
 }
+
+export async function getAllBooks() {
+  const res = await fetch(`${BASE_URL}/book/all`);
+  if (!res.ok) throw new Error("Failed to fetch books");
+  return await res.json();
+}
