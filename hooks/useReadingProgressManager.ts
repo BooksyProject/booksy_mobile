@@ -18,6 +18,7 @@ export default function useReadingProgressManager(bookId?: string) {
     const fetchProgress = async () => {
       try {
         const data = await getReadingProgress(bookId);
+        console.log(data, "data of progress get");
         setProgress(data);
       } catch (err) {
         console.error("Failed to load reading progress:", err);
@@ -27,7 +28,7 @@ export default function useReadingProgressManager(bookId?: string) {
     };
 
     fetchProgress();
-  }, [bookId]);
+  }, [bookId, progress?.chapterId]);
 
   const save = async (data: {
     chapterId: string;
@@ -35,12 +36,25 @@ export default function useReadingProgressManager(bookId?: string) {
     percentage?: number;
   }) => {
     try {
+      // Save progress to the server
       await saveReadingProgress(bookId!, data);
+      // Update local progress state synchronously
       setProgress(data);
+      console.log("Saved progress:", data);
     } catch (err) {
       console.error("Error saving progress:", err);
     }
   };
 
-  return { progress, loading, save };
+  // Save progress when chapter changes or when navigating
+  const updateProgress = (
+    chapterId: string,
+    chapterNumber: number,
+    percentage: number
+  ) => {
+    const newProgress = { chapterId, chapterNumber, percentage };
+    save(newProgress); // Save progress immediately
+  };
+
+  return { progress, loading, save, updateProgress };
 }
