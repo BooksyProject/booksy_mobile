@@ -1242,7 +1242,81 @@ const AddMediaIcon = ({ size = 24, color = "currentColor" }) => (
     />
   </Svg>
 );
+
+const BellIcon = ({ size = 24, color = "currentColor" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M18.75 9.71v-.705C18.75 5.136 15.726 2 12 2S5.25 5.136 5.25 9.005v.705a4.4 4.4 0 0 1-.692 2.375L3.45 13.81c-1.011 1.575-.239 3.716 1.52 4.214a25.8 25.8 0 0 0 14.06 0c1.759-.498 2.531-2.639 1.52-4.213l-1.108-1.725a4.4 4.4 0 0 1-.693-2.375Z"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.5}
+    />
+    <Path
+      d="M7.5 19c.655 1.748 2.422 3 4.5 3s3.845-1.252 4.5-3"
+      fill="none"
+      stroke={color}
+      strokeWidth={1.5}
+      strokeLinecap="round"
+    />
+  </Svg>
+);
+
+const ThemeIcon = ({ size = 24, color = "currentColor" }) => (
+  <Svg width={size} height={size} viewBox="0 0 512 512" fill="none">
+    <Path
+      d="M430.11 347.9c-6.6-6.1-16.3-7.6-24.6-9c-11.5-1.9-15.9-4-22.6-10
+      c-14.3-12.7-14.3-31.1 0-43.8l30.3-26.9c46.4-41 46.4-108.2 0-149.2
+      c-34.2-30.1-80.1-45-127.8-45c-55.7 0-113.9 20.3-158.8 60.1
+      c-83.5 73.8-83.5 194.7 0 268.5c41.5 36.7 97.5 55 152.9 55.4h1.7
+      c55.4 0 110-17.9 148.8-52.4c14.4-12.7 11.99-36.6.1-47.7Z"
+      stroke={color}
+      strokeWidth={2}
+      strokeMiterlimit={10}
+      fill="none"
+    />
+    <Circle cx="144" cy="208" r="32" fill={color} />
+    <Circle cx="152" cy="311" r="32" fill={color} />
+    <Circle cx="224" cy="144" r="32" fill={color} />
+    <Circle cx="256" cy="367" r="48" fill={color} />
+    <Circle cx="328" cy="144" r="32" fill={color} />
+  </Svg>
+);
+
+const FontIcon = ({ size = 24, color = "currentColor" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M13 18L8 6L3 18m8-4H5m16 4v-3m0 0v-3m0 3a3 3 0 1 1-6 0a3 3 0 0 1 6 0"
+      stroke={color}
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </Svg>
+);
+
+const FontLineIcon = ({ size = 24, color = "currentColor" }) => (
+  <Svg width={size} height={size} viewBox="0 0 256 256" fill="none">
+    <Path
+      d="M60.59 175.24a8 8 0 0 0 10.65-3.83L87.9 136h80.2l16.66 35.41a8 8 0 1 0 14.48-6.82l-64-136a8 8 0 0 0-14.48 0l-64 136a8 8 0 0 0 3.83 10.65M128 50.79L160.57 120H95.43ZM224 216a8 8 0 0 1-8 8H40a8 8 0 0 1 0-16h176a8 8 0 0 1 8 8"
+      fill={color}
+    />
+  </Svg>
+);
+
+const LineSpacingIcon = ({ size = 24, color = "currentColor" }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      d="M10 8h11c.6 0 1-.4 1-1s-.4-1-1-1H10c-.6 0-1 .4-1 1s.4 1 1 1m-4.3 7.3V8.7q.3.3.6.3c.3 0 .5-.1.7-.2c.4-.4.5-1 .1-1.4l-1.7-2C5.2 5.1 5 5 4.7 5s-.6.1-.8.4l-1.7 2c-.3.4-.3 1 .2 1.4c.4.3.9.3 1.3 0v6.6c-.4-.3-.9-.4-1.3 0s-.5 1-.1 1.4l1.7 2c.1.1.4.2.7.2s.6-.1.8-.4l1.7-2c.4-.4.3-1.1-.1-1.4c-.5-.3-1.1-.3-1.4.1M21 11H10c-.6 0-1 .4-1 1s.4 1 1 1h11c.6 0 1-.4 1-1s-.4-1-1-1m0 5H10c-.6 0-1 .4-1 1s.4 1 1 1h11c.6 0 1-.4 1-1s-.4-1-1-1"
+      fill={color}
+    />
+  </Svg>
+);
 export {
+  LineSpacingIcon,
+  FontLineIcon,
+  FontIcon,
+  ThemeIcon,
+  BellIcon,
   AddMediaIcon,
   HobbyIcon,
   LocationPinIcon,
