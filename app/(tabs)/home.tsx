@@ -1,50 +1,64 @@
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
-import { Link } from "expo-router";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import CategoryTab from "@/components/ui/category-tab";
 import { useEffect, useState } from "react";
 import { BookResponseDTO } from "@/dtos/BookDTO";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { getAllBooks } from "@/lib/service/book.service";
 import BookCard from "@/components/card/book/BookCard";
+import CircleIconButton from "@/components/ui/circle-icon-button";
+import { BellIcon } from "@/components/icon/Icons";
+
 const categories = ["All", "Detective", "Drama", "Historical"];
+
 const Home = () => {
   const { colorScheme } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
   const [booksData, setBooksData] = useState<BookResponseDTO[]>([]);
+
   useEffect(() => {
     let isMounted = true;
-    const loadInitialPosts = async () => {
+
+    const loadInitialBooks = async () => {
       try {
         const data = await getAllBooks();
-        if (!isMounted) return;
-        setBooksData(data.books);
+        if (isMounted) {
+          setBooksData(data.books);
+        }
       } catch (e) {
-        console.error("Failed to load posts", e);
+        console.error("Failed to load books", e);
       } finally {
         if (isMounted) setIsLoading(false);
       }
     };
-    loadInitialPosts();
+
+    loadInitialBooks();
     return () => {
       isMounted = false;
     };
   }, []);
 
   return (
-    <View
+    <ScrollView
       className="flex-1 pt-[30px] px-5"
+      showsVerticalScrollIndicator={false}
       style={{
         backgroundColor:
           colorScheme === "dark" ? colors.dark[200] : colors.light[200],
-        flex: 1,
-        gap: 24,
       }}
+      contentContainerStyle={{ paddingBottom: 24 }}
     >
-      <View>
+      {/* Notification Button */}
+      <View className="w-full items-end mb-4">
+        <CircleIconButton
+          icon={BellIcon}
+          onPress={() => console.log("Pressed")}
+        />
+      </View>
+
+      {/* Greeting */}
+      <View className="mb-6">
         <Text
           className="text-[24px] font-msemibold"
           style={{
@@ -66,10 +80,11 @@ const Home = () => {
         </Text>
       </View>
 
+      {/* Category Tabs */}
       <ScrollView
-        className="space-x-3"
         horizontal
         showsHorizontalScrollIndicator={false}
+        className="mb-6"
       >
         {categories.map((category) => (
           <CategoryTab
@@ -81,7 +96,8 @@ const Home = () => {
         ))}
       </ScrollView>
 
-      <View className="">
+      {/* Book List */}
+      <View>
         {isLoading ? (
           <Text className="text-center text-sm">Loading books...</Text>
         ) : (
@@ -91,11 +107,10 @@ const Home = () => {
             contentContainerStyle={{ paddingVertical: 8 }}
           >
             {booksData
-              .filter(
-                (book) =>
-                  selectedCategory === "All"
-                    ? true
-                    : book.categories.includes(selectedCategory) // nếu `categories` là string[] hoặc ID
+              .filter((book) =>
+                selectedCategory === "All"
+                  ? true
+                  : book.categories.includes(selectedCategory)
               )
               .map((book, index) => (
                 <BookCard
@@ -107,7 +122,7 @@ const Home = () => {
           </ScrollView>
         )}
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
