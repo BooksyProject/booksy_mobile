@@ -113,11 +113,7 @@ const Home = () => {
                   : book.categories.includes(selectedCategory)
               )
               .map((book, index) => (
-                <BookCard
-                  key={book.title + index}
-                  book={book}
-                  onPress={() => console.log("Read:", book.title)}
-                />
+                <BookCard key={book.title + index} book={book} />
               ))}
           </ScrollView>
         )}

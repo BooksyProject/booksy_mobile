@@ -1,5 +1,5 @@
 import Svg, { Path, Rect, Circle } from "react-native-svg";
-import { useTheme } from "@react-navigation/native";
+
 const SearchIcon = ({ size = 24, color }) => {
   return (
     <Svg width={size} height={size} viewBox="0 0 256 256" fill="none">
@@ -939,6 +939,7 @@ export const PlayAudioIcon = ({ size = 24, color = "currentColor" }) => (
     <Path fill={color} d="M14 19V5h4v14zm-8 0V5h4v14z" />
   </Svg>
 );
+
 export const DocTypeIcon = ({ size = 70, color = "#1f64ad" }) => {
   // Blue for Word
   return (
@@ -1028,6 +1029,7 @@ const LocationIcon = ({ size = 24, color = "currentColor" }) => (
     />
   </Svg>
 );
+
 const AddIcon = ({ size = 24, color = "black" }) => {
   return (
     <Svg
@@ -1040,6 +1042,7 @@ const AddIcon = ({ size = 24, color = "black" }) => {
     </Svg>
   );
 };
+
 const LocationPinIcon = ({ size = 24, color = "currentColor" }) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1102,6 +1105,7 @@ const DobIcon = ({ size = 24, color = "currentColor" }) => (
     />
   </Svg>
 );
+
 const GenderFemaleIcon = ({ size = 24, color = "currentColor" }) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1115,6 +1119,7 @@ const GenderFemaleIcon = ({ size = 24, color = "currentColor" }) => (
     />
   </Svg>
 );
+
 const GenderMaleIcon = ({ size = 24, color = "currentColor" }) => (
   <Svg
     xmlns="http://www.w3.org/2000/svg"
@@ -1189,6 +1194,7 @@ const CalendarIcon = ({ size = 24, color = "currentColor" }) => (
     ))}
   </Svg>
 );
+
 const HobbyIcon = ({ size = 24, color = "currentColor" }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
     <Path
@@ -1311,6 +1317,7 @@ const LineSpacingIcon = ({ size = 24, color = "currentColor" }) => (
     />
   </Svg>
 );
+
 export {
   LineSpacingIcon,
   FontLineIcon,
