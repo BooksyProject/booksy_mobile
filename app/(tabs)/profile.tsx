@@ -19,10 +19,14 @@ import {
   LineSpacingIcon,
   ThemeIcon,
 } from "@/components/icon/Icons";
+import Button from "@/components/ui/button";
+import RadioGroup from "@/components/ui/radio-group";
+import SelectBox from "@/components/ui/select-box";
 
 const Profile = () => {
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
+  const [mode, setMode] = useState("light");
 
   const [font, setFont] = useState("Montserrat");
   const [fontSize, setFontSize] = useState("Large");
@@ -85,61 +89,73 @@ const Profile = () => {
         </Text>
 
         {/* Light / Dark Mode */}
-        <View className="flex-row items-center justify-between">
+        <View
+          className="flex-row items-center justify-start "
+          style={{ gap: 40 }}
+        >
           <ThemeIcon size={30} color={textColor} />
-          <Text style={{ color: textColor }}>Light</Text>
-          {/* <Switch
-            value={isDark}
-            onValueChange={toggleTheme}
-            thumbColor={isDark ? "#f4f3f4" : "#f4f3f4"}
-            trackColor={{ false: "#767577", true: "#81b0ff" }}
-          /> */}
-          <Text style={{ color: textColor }}>Dark</Text>
+          <RadioGroup
+            value={mode}
+            onChange={setMode}
+            options={[
+              { label: "Light", value: "light" },
+              { label: "Dark", value: "dark" },
+            ]}
+          />
         </View>
 
         {/* Font */}
-        <View className="flex-row items-center justify-between">
+        <View
+          className="flex-row items-center justify-start w-full"
+          style={{ gap: 40 }}
+        >
           <FontIcon size={30} color={textColor} />
-          <Picker
-            selectedValue={font}
-            // onValueChange={(itemValue) => setFont(itemValue)}
-            style={{ color: textColor }}
-          >
-            <Picker.Item label="Montserrat" value="Montserrat" />
-            <Picker.Item label="Roboto" value="Roboto" />
-          </Picker>
+          <SelectBox
+            value={font}
+            onChange={setFont}
+            options={[
+              { label: "Montserrat", value: "Montserrat" },
+              { label: "Roboto", value: "Roboto" },
+              { label: "Open Sans", value: "OpenSans" },
+            ]}
+          />
         </View>
 
         {/* Font Size */}
-        <View className="flex-row items-center justify-between">
+        <View
+          className="flex-row items-center justify-start"
+          style={{ gap: 40 }}
+        >
           <FontLineIcon size={30} color={textColor} />
-          <Picker
-            selectedValue={fontSize}
-            // onValueChange={(itemValue) => setFontSize(itemValue)}
-            style={{ color: textColor }}
-          >
-            <Picker.Item label="Large" value="Large" />
-            <Picker.Item label="Small" value="Small" />
-          </Picker>
+          <RadioGroup
+            value={fontSize}
+            onChange={setFontSize}
+            options={[
+              { label: "Large", value: "large" },
+              { label: "Small", value: "small" },
+            ]}
+          />
         </View>
 
         {/* Line Height */}
-        <View className="flex-row items-center justify-between">
+        <View
+          className="flex-row items-center justify-start"
+          style={{ gap: 40 }}
+        >
           <LineSpacingIcon size={30} color={textColor} />
-          <Picker
-            selectedValue={lineHeight}
-            // onValueChange={(itemValue) => setLineHeight(itemValue)}
-            style={{ color: textColor }}
-          >
-            <Picker.Item label="1.5" value="1.5" />
-            <Picker.Item label="2.0" value="2.0" />
-          </Picker>
+          <SelectBox
+            value={lineHeight}
+            onChange={setLineHeight}
+            options={[
+              { label: "1.5", value: "1.5" },
+              { label: "2.0", value: "2.0" },
+            ]}
+          />
         </View>
 
-        {/* Logout */}
-        <TouchableOpacity className="bg-dark-100 py-3 rounded-lg items-center">
-          <Text className="text-white font-semibold">Log out</Text>
-        </TouchableOpacity>
+        <View>
+          <Button title="LOG OUT" outline={false} />
+        </View>
       </View>
     </ScrollView>
   );
