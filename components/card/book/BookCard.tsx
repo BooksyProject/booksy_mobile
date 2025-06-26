@@ -16,12 +16,12 @@ import { colors } from "@/styles/colors";
 import BookDetailCard from "./BookDetailCard";
 import Button from "@/components/ui/button";
 
-interface PostCardProps {
+interface BookCardProps {
   book: BookResponseDTO;
   // onPress?: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ book }) => {
+const BookCard: React.FC<BookCardProps> = ({ book }) => {
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
   const [isModalVisible, setModalVisible] = useState(false);
@@ -72,9 +72,7 @@ const PostCard: React.FC<PostCardProps> = ({ book }) => {
           </View>
         </View>
       </ImageBackground>
-      <View className="w-[90%]">
-        <Button title="READ NOW" outline={false} />
-      </View>
+
       <Modal
         transparent={true}
         animationType="slide"
@@ -94,4 +92,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostCard;
+export default BookCard;
