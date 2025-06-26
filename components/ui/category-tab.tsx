@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     marginRight: 10,
     alignItems: "center",
     justifyContent: "center",
-    height: 45,
+    // height: 45,
   },
   tabText: {
     fontSize: 14,

@@ -7,15 +7,18 @@ import { BookResponseDTO } from "@/dtos/BookDTO";
 import { getAllBooks } from "@/lib/service/book.service";
 import BookCard from "@/components/card/book/BookCard";
 import CircleIconButton from "@/components/ui/circle-icon-button";
-import { BellIcon } from "@/components/icon/Icons";
-
-const categories = ["All", "Detective", "Drama", "Historical"];
+import { BellIcon, LikeIcon } from "@/components/icon/Icons";
+import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
+import { getAllCategories } from "@/lib/service/category.service";
 
 const Home = () => {
   const { colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [booksData, setBooksData] = useState<BookResponseDTO[]>([]);
+  const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
+  const textColor = isDark ? colors.dark[100] : colors.light[100];
 
   useEffect(() => {
     let isMounted = true;
@@ -39,64 +42,111 @@ const Home = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadInitialCategories = async () => {
+      try {
+        const data = await getAllCategories();
+        if (isMounted) {
+          setCategoryData(data.categories);
+        }
+      } catch (e) {
+        console.error("Failed to load categories", e);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    loadInitialCategories();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <ScrollView
       className="flex-1 pt-[30px] px-5"
       showsVerticalScrollIndicator={false}
       style={{
-        backgroundColor:
-          colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+        backgroundColor: isDark ? colors.dark[200] : colors.light[200],
+        gap: 5,
       }}
       contentContainerStyle={{ paddingBottom: 24 }}
     >
-      {/* Notification Button */}
       <View className="w-full items-end mb-4">
         <CircleIconButton
-          icon={BellIcon}
+          icon={LikeIcon}
           onPress={() => console.log("Pressed")}
         />
       </View>
 
-      {/* Greeting */}
       <View className="mb-6">
         <Text
           className="text-[24px] font-msemibold"
-          style={{
-            color:
-              colorScheme === "dark" ? colors.dark[100] : colors.light[100],
-          }}
+          style={{ color: textColor }}
         >
           Hey,
           <Text className="text-6 font-msemibold text-primary-100"> Huỳnh</Text>
         </Text>
         <Text
           className="text-[24px] font-msemibold"
-          style={{
-            color:
-              colorScheme === "dark" ? colors.dark[100] : colors.light[100],
-          }}
+          style={{ color: textColor }}
         >
           Immerse Yourself In Stories That Come To Life
         </Text>
       </View>
 
-      {/* Category Tabs */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         className="mb-6"
       >
-        {categories.map((category) => (
+        <CategoryTab
+          key="all"
+          title="All"
+          isActive={selectedCategory === "All"}
+          onPress={() => setSelectedCategory("All")}
+        />
+
+        {categoryData.map((category) => (
           <CategoryTab
-            key={category}
-            title={category}
-            isActive={selectedCategory === category}
-            onPress={() => setSelectedCategory(category)}
+            key={category._id}
+            title={category.name}
+            isActive={selectedCategory === category._id}
+            onPress={() => setSelectedCategory(category._id)}
           />
         ))}
       </ScrollView>
 
-      {/* Book List */}
+      <View className="flex-row justify-between mb-6">
+        <Text
+          style={{ color: textColor }}
+          className="text-[18px] font-msemibold"
+        >
+          Continue reading
+        </Text>
+        <TouchableOpacity>
+          <Text className="text-primary-100 text-[14px] font-mmedium">
+            See all
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <View className="flex-row justify-between mb-4">
+        <Text
+          style={{ color: textColor }}
+          className="text-[18px] font-msemibold"
+        >
+          May you like
+        </Text>
+        <TouchableOpacity>
+          <Text className="text-primary-100 text-[14px] font-mmedium">
+            See all
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View>
         {isLoading ? (
           <Text className="text-center text-sm">Loading books...</Text>
