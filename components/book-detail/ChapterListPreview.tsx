@@ -1,33 +1,28 @@
 import { ChapterInf } from "@/dtos/ChapterDTO";
 import useGoToReader from "@/hooks/goToReader";
 import { useState } from "react";
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
+import SeeAllChapter from "./SeeAllChapter"; // Import modal
 
 interface Props {
-  bookId: string; // Thêm bookId vào Props
+  bookId: string;
   chapters: ChapterInf[];
-  onSeeAll?: () => void;
 }
 
-export default function ChapterListPreview({
-  bookId,
-  chapters,
-  onSeeAll,
-}: Props) {
-  const goToReader = useGoToReader(); // Khởi tạo hook
-  const [showAll, setShowAll] = useState(false); // State to toggle between showing 5 chapters or all chapters
+export default function ChapterListPreview({ bookId, chapters }: Props) {
+  const goToReader = useGoToReader();
+  const [showAll, setShowAll] = useState(false);
+  const [isModalVisible, setModalVisible] = useState(false);
+
+  const openModal = async () => {
+    setModalVisible(true); // Mở modal khi nhấn vào See all
+  };
 
   const handleChapterPress = (chapterNumber: number) => {
-    // Khi bấm vào chương, điều hướng đến màn hình Reader
     goToReader(bookId, chapterNumber);
   };
 
-  const handleSeeAllPress = () => {
-    setShowAll(true);
-    if (onSeeAll) onSeeAll(); // Call the passed onSeeAll function if it exists
-  };
-
-  const displayedChapters = showAll ? chapters : chapters.slice(0, 10); // Show first 5 chapters or all chapters based on the state
+  const displayedChapters = showAll ? chapters : chapters.slice(0, 10);
 
   return (
     <View className="mt-6 px-4">
@@ -35,14 +30,13 @@ export default function ChapterListPreview({
         <Text className="font-msemibold text-lg">
           {chapters.length} chapters
         </Text>
-        <TouchableOpacity onPress={handleSeeAllPress}>
+        <TouchableOpacity onPress={openModal}>
           <Text className="text-custom-red font-mregular text-base">
             See all
           </Text>
         </TouchableOpacity>
       </View>
 
-      {/* ScrollView to allow scrolling through the chapters */}
       <ScrollView style={{ maxHeight: 300 }}>
         {displayedChapters.map((ch, index) => (
           <View
@@ -57,6 +51,20 @@ export default function ChapterListPreview({
           </View>
         ))}
       </ScrollView>
+
+      {/* Modal */}
+      <Modal
+        transparent={true}
+        animationType="slide"
+        visible={isModalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <SeeAllChapter
+          bookId={bookId} // Truyền bookId vào modal
+          chapters={chapters} // Truyền chapters vào modal
+          onClose={() => setModalVisible(false)} // Đóng modal khi nhấn nút đóng
+        />
+      </Modal>
     </View>
   );
 }

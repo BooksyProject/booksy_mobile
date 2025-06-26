@@ -23,7 +23,7 @@ interface ChapterData {
   content: string;
 }
 
-const IMAGE_BASE_URL = "http://192.168.1.24:3000/"; // 🔁 Cập nhật đúng URL server của bạn
+const IMAGE_BASE_URL = "http://192.168.1.219:3000/"; // 🔁 Cập nhật đúng URL server của bạn
 
 export default function ReaderScreen() {
   const { width } = useWindowDimensions();

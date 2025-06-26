@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import BookDetailCard from "./BookDetailCard";
 import Button from "@/components/ui/button";
+import BookDetail from "@/components/book-detail/BookDetail";
 
 interface PostCardProps {
   book: BookResponseDTO;
@@ -73,7 +74,7 @@ const PostCard: React.FC<PostCardProps> = ({ book }) => {
         </View>
       </ImageBackground>
       <View className="w-[90%]">
-        <Button title="READ NOW" outline={false} />
+        <Button title="READ NOW" outline={false} onPress={openModal} />
       </View>
       <Modal
         transparent={true}
@@ -81,7 +82,10 @@ const PostCard: React.FC<PostCardProps> = ({ book }) => {
         visible={isModalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <BookDetailCard onClose={() => setModalVisible(false)} />
+        <BookDetail
+          book={book} // Pass book data here to display in modal
+          onClose={() => setModalVisible(false)} // Close modal function
+        />
       </Modal>
     </TouchableOpacity>
   );
