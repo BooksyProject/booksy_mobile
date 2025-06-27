@@ -1,10 +1,10 @@
-import { CategoryDTO } from "./CategoryDTO";
+import { CategoryResponseDTO } from "./CategoryDTO";
 
 export interface BookDTO {
   _id: string;
   title: string;
   author: string;
-  categories: CategoryDTO[];
+  categories: CategoryResponseDTO[];
   description: string;
   coverImage: string;
   fileURL: string;
