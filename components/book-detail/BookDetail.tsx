@@ -89,6 +89,7 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
   return (
     <ScrollView className="flex-1 bg-book-background">
       <BookHeaderCard
+        _id={bookDetail._id}
         title={bookDetail.title}
         author={bookDetail.author}
         coverImage={bookDetail.coverImage}

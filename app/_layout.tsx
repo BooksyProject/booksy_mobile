@@ -4,6 +4,7 @@ import { useFonts } from "expo-font";
 import { useEffect } from "react";
 import { hideAsync } from "expo-splash-screen";
 import "@/global.css";
+import { ReaderSettingsProvider } from "@/contexts/ReaderSettingContext";
 // import { ThemeProvider } from "@/context/ThemeContext";
 // import { AuthProvider } from "@/context/AuthContext";
 // import { ChatProvider } from "@/context/ChatContext";
@@ -22,6 +23,8 @@ const RootLayout = () => {
     "Montserrat-SemiBold": require("../assets/fonts/Montserrat-SemiBold.ttf"),
     "Montserrat-Thin": require("../assets/fonts/Montserrat-Thin.ttf"),
     "JosefinSans-SemiBold": require("../assets/fonts/JosefinSans-SemiBold.ttf"),
+    "Roboto-VariableFont_wdth,wght": require("../assets/fonts/Roboto-VariableFont_wdth,wght.ttf"),
+    "RobotoMono-VariableFont_wght": require("../assets/fonts/RobotoMono-VariableFont_wght.ttf"),
   });
 
   useEffect(() => {
@@ -36,18 +39,19 @@ const RootLayout = () => {
     // <AuthProvider>
     //   <ThemeProvider>
     //     <ChatItemProvider>
-    //       <ChatProvider>
-    <Stack>
-      <Stack.Screen name="index" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen name="chats" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen name="search" options={{ headerShown: false }} /> */}
-      {/* <Stack.Screen name="message" options={{ headerShown: false }} /> */}
-    </Stack>
-    //       </ChatProvider>
+    <ReaderSettingsProvider>
+      <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
+        {/* <Stack.Screen name="chats" options={{ headerShown: false }} /> */}
+        {/* <Stack.Screen name="search" options={{ headerShown: false }} /> */}
+        {/* <Stack.Screen name="message" options={{ headerShown: false }} /> */}
+        <Stack.Screen name="reader/[bookId]" options={{ headerShown: false }} />
+      </Stack>{" "}
+    </ReaderSettingsProvider>
     //     </ChatItemProvider>
     //   </ThemeProvider>
     // </AuthProvider>

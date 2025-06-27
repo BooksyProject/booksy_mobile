@@ -1,12 +1,20 @@
 import { View, Text, Image, Alert, Share, Platform } from "react-native";
-import { Heart, Share2, Bell, ExternalLink } from "lucide-react-native";
+import {
+  Heart,
+  Share2,
+  Bell,
+  ExternalLink,
+  DownloadIcon,
+} from "lucide-react-native";
 import TouchableButton from "@/components/ui/TouchableButton";
 import GenreBadge from "../ui/GenreBadge";
 import { Category } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { handleDownload } from "@/lib/service/book.service";
 
 interface Props {
+  _id: string;
   title: string;
   author: string;
   coverImage: string;
@@ -18,6 +26,7 @@ interface Props {
 }
 
 export default function BookHeaderCard({
+  _id,
   title,
   author,
   coverImage,
@@ -71,70 +80,6 @@ ${categories_text}
 Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
 
 #BookRecommendation #Reading #${fileName.replace(".epub", "")}`;
-  };
-
-  const handleShare = async () => {
-    try {
-      const shareOptions = [
-        {
-          title: "Chia sẻ thông tin sách",
-          action: async () => {
-            const result = await Share.share({
-              message: generateShareText(),
-              title: `${title} - ${author}`,
-            });
-            return result;
-          },
-        },
-        {
-          title: "Chia sẻ với hình ảnh",
-          action: async () => {
-            const result = await Share.share({
-              message: generateShareText(),
-              url: coverImage, // Chia sẻ ảnh bìa
-              title: `${title} - ${author}`,
-            });
-            return result;
-          },
-        },
-        {
-          title: "Chia sẻ link tải app",
-          action: async () => {
-            const appStoreLink =
-              Platform.OS === "ios"
-                ? "https://apps.apple.com/app/your-book-app"
-                : "https://play.google.com/store/apps/details?id=com.yourbookapp";
-
-            const result = await Share.share({
-              message: `📚 "${title}" - ${author}\n\nTải app để đọc sách miễn phí:\n${appStoreLink}`,
-              title: `${title} - ${author}`,
-              url: appStoreLink,
-            });
-            return result;
-          },
-        },
-      ];
-
-      // Hiển thị dialog để chọn kiểu chia sẻ
-      Alert.alert("Chia sẻ sách", "Bạn muốn chia sẻ như thế nào?", [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Thông tin sách",
-          onPress: () => shareOptions[0].action(),
-        },
-        {
-          text: "Với hình ảnh",
-          onPress: () => shareOptions[1].action(),
-        },
-        {
-          text: "Link tải app",
-          onPress: () => shareOptions[2].action(),
-        },
-      ]);
-    } catch (error) {
-      console.error("Share error:", error);
-      Alert.alert("Lỗi", "Không thể chia sẻ sách");
-    }
   };
 
   const handleQuickShare = async () => {
@@ -243,6 +188,17 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
               variant="solid"
               bgColor="#1E293B"
               icon={<Share2 color="white" size={20} />}
+            />
+          </View>
+          <View className="flex flex-row gap-2">
+            {/* Nút Share với tùy chọn */}
+            <TouchableButton
+              onPress={() => handleDownload(_id)}
+              size="sm"
+              rounded="full"
+              variant="solid"
+              bgColor="#1E293B"
+              icon={<DownloadIcon color="white" size={20} />}
             />
           </View>
         </View>
