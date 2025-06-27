@@ -17,12 +17,12 @@ import BookDetailCard from "./BookDetailCard";
 import Button from "@/components/ui/button";
 import BookDetail from "@/components/book-detail/BookDetail";
 
-interface PostCardProps {
+interface BookCardProps {
   book: BookResponseDTO;
   // onPress?: () => void;
 }
 
-const PostCard: React.FC<PostCardProps> = ({ book }) => {
+const BookCard: React.FC<BookCardProps> = ({ book }) => {
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
   const [isModalVisible, setModalVisible] = useState(false);
@@ -98,4 +98,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PostCard;
+export default BookCard;

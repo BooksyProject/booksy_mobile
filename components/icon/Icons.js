@@ -1,15 +1,13 @@
 import Svg, { Path, Rect, Circle } from "react-native-svg";
 
-const SearchIcon = ({ size = 24, color }) => {
-  return (
-    <Svg width={size} height={size} viewBox="0 0 256 256" fill="none">
-      <Path
-        d="M229.66 218.34l-50.07-50.06a88.11 88.11 0 1 0-11.31 11.31l50.06 50.07a8 8 0 0 0 11.32-11.32M40 112a72 72 0 1 1 72 72a72.08 72.08 0 0 1-72-72"
-        fill={color}
-      />
-    </Svg>
-  );
-};
+const SearchIcon = ({ size = 24, color }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+    <Path
+      fill={color}
+      d="M11 2c4.968 0 9 4.032 9 9s-4.032 9-9 9s-9-4.032-9-9s4.032-9 9-9m0 16c3.867 0 7-3.133 7-7s-3.133-7-7-7s-7 3.133-7 7s3.133 7 7 7m8.485.071l2.829 2.828l-1.415 1.415l-2.828-2.829z"
+    />
+  </Svg>
+);
 
 const MessageIcon = ({ size = 24, color }) => {
   return (

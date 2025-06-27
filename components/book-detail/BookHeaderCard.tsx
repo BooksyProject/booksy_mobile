@@ -8,10 +8,10 @@ import {
 } from "lucide-react-native";
 import TouchableButton from "@/components/ui/TouchableButton";
 import GenreBadge from "../ui/GenreBadge";
-import { Category } from "@/dtos/CategoryDTO";
+import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { handleDownload } from "@/lib/service/book.service";
+import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
 
 interface Props {
   _id: string;
@@ -21,7 +21,7 @@ interface Props {
   likes: number;
   chapters: number;
   views: number;
-  categories: Category[];
+  categories: CategoryResponseDTO[];
   fileURL: string; // "../../../public/book/hemingway-in-our-time.epub"
 }
 
@@ -121,13 +121,27 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
 
   const handleHeartPress = async () => {
     try {
+      // Đảo trạng thái bookmark
       const newBookmarkStatus = !isBookmarked;
+
+      // Lưu trạng thái mới vào AsyncStorage
       await AsyncStorage.setItem(
         `bookmark_${title}`,
         newBookmarkStatus.toString()
       );
+
       setIsBookmarked(newBookmarkStatus);
 
+      // Kiểm tra trạng thái yêu thích và gọi hàm tương ứng
+      if (newBookmarkStatus) {
+        // Nếu là yêu thích (mới đánh dấu), gọi hàm likeBook
+        await likeBook(_id, "6858324823a912623fc86675");
+      } else {
+        // Nếu là bỏ yêu thích (mới bỏ dấu), gọi hàm unlikeBook
+        await unlikeBook(_id, "6858324823a912623fc86675");
+      }
+
+      // Hiển thị thông báo cho người dùng
       Alert.alert(
         newBookmarkStatus ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích",
         newBookmarkStatus
@@ -136,6 +150,7 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
       );
     } catch (error) {
       console.error("Error toggling bookmark:", error);
+      Alert.alert("Có lỗi xảy ra", "Không thể thay đổi trạng thái yêu thích.");
     }
   };
 
@@ -191,9 +206,9 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
             />
           </View>
           <View className="flex flex-row gap-2">
-            {/* Nút Share với tùy chọn */}
+            {/* Nút download với tùy chọn */}
             <TouchableButton
-              onPress={() => handleDownload(_id)}
+              onPress={() => downloadBook(_id)}
               size="sm"
               rounded="full"
               variant="solid"

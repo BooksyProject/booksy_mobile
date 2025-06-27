@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
   defaultContainer: {
     width: "100%",
     paddingVertical: 10,
-    paddingHorizontal: 24,
+    paddingHorizontal: 10,
   },
   text: {
     fontSize: 16,

@@ -14,6 +14,7 @@ import { login, getMyProfile } from "@/lib/service/user.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/contexts/ThemeContext";
 import Input from "@/components/ui/input";
+import Button from "@/components/ui/button";
 
 const SignIn = () => {
   // const { setProfile } = useAuth();
@@ -23,27 +24,27 @@ const SignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
 
-  // const handleSubmit = async () => {
-  //   const userData = { phoneNumber, password };
+  const handleSubmit = async () => {
+    const userData = { phoneNumber, password };
 
-  //   try {
-  //     const user = await login(userData);
+    try {
+      const user = await login(userData);
 
-  //     if (user) {
-  //       await AsyncStorage.setItem("token", user.token);
-  //       console.log(user.token);
-  //       const decodedToken = JSON.parse(atob(user.token.split(".")[1]));
-  //       const userId = decodedToken?.id;
-  //       console.log(userId);
-  //       await AsyncStorage.setItem("userId", userId);
-  //       const profileData = await getMyProfile(userId);
-  //       setProfile(profileData.userProfile);
-  //       router.push("home" as any);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error:", error);
-  //   }
-  // };
+      if (user) {
+        await AsyncStorage.setItem("token", user.token);
+        console.log(user.token);
+        const decodedToken = JSON.parse(atob(user.token.split(".")[1]));
+        const userId = decodedToken?.id;
+        console.log(userId);
+        await AsyncStorage.setItem("userId", userId);
+        const profileData = await getMyProfile(userId);
+        // setProfile(profileData.userProfile);
+        router.push("home" as any);
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -143,7 +144,7 @@ const SignIn = () => {
             </View>
             <View className="w-full space-y-5">
               <View className="">
-                {/* <Button
+                <Button
                   title="Sign In"
                   onPress={handleSubmit}
                   fontColor={
@@ -151,7 +152,7 @@ const SignIn = () => {
                       ? colors.dark[100]
                       : colors.light[200]
                   }
-                /> */}
+                />
               </View>
               <View className="items-end">
                 <TouchableOpacity

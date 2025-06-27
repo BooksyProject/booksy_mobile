@@ -191,28 +191,19 @@ export default function ReaderScreen() {
       </View>
     );
   }
-  const cleanHtml = chapterData.content.replace(/font-family:[^;]*;/g, "");
   return (
     <View className={`flex-1 ${themeStyles.container}`}>
       {/* Header với nút settings */}
       <SafeAreaView>
         <View className="flex-row justify-end items-center px-4 py-2 mt-10">
-          {/* <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons
-              name="arrow-back"
-              size={24}
-              color={settings.theme === "dark" ? "#fff" : "#000"}
-            />
-          </TouchableOpacity> */}
-
           <TouchableOpacity
             onPress={() => setShowSettings(true)}
-            className={`p-2 rounded-lg ${themeStyles.button}`}
+            className={`p-2 rounded-lg`}
           >
             <Ionicons
               name="settings-outline"
               size={20}
-              color={settings.theme === "dark" ? "#fff" : "#000"}
+              color={settings.theme === "dark" ? "white" : "none"}
             />
           </TouchableOpacity>
         </View>
@@ -223,24 +214,6 @@ export default function ReaderScreen() {
         className="flex-1 px-4 py-6"
         contentInsetAdjustmentBehavior="automatic"
       >
-        {/* <Text
-          className={`text-xl font-bold mb-4 ${themeStyles.text}`}
-          style={{
-            fontFamily: getCurrentFontFamily(),
-            fontSize: settings.fontSize + 4, // Title lớn hơn content một chút
-          }}
-        >
-          {chapterData.chapterTitle}
-        </Text> */}
-        {/* <Text
-          style={{
-            fontFamily: getCurrentFontFamily(),
-            fontSize: settings.fontSize,
-          }}
-        >
-          {chapterData.content}
-        </Text> */}
-
         <RenderHTML
           contentWidth={width}
           source={{ html: chapterData.content }}
@@ -258,27 +231,20 @@ export default function ReaderScreen() {
             selectable: true,
           }}
         />
+        <View
+          className={`h-20 px-6 pt-2 mb-10 border-t ${themeStyles.border} ${themeStyles.container}`}
+        >
+          <Pagination
+            currentPage={chapterNumber}
+            totalPages={chapterTotal || 1}
+            onChange={(newPage) => {
+              if (newPage >= 1 && newPage <= chapterTotal) {
+                goToChapter(newPage);
+              }
+            }}
+          />
+        </View>
       </ScrollView>
-      {/* <WebView
-        originWhitelist={["*"]}
-        source={{ html: chapterData.content }}
-        injectedJavaScript={`document.body.style.fontFamily = "${getCurrentFontFamily()}";`}
-        style={{ flex: 1 }}
-      /> */}
-      {/* Pagination */}
-      <View
-        className={`px-6 mb-20 border-t ${themeStyles.border} ${themeStyles.container}`}
-      >
-        <Pagination
-          currentPage={chapterNumber}
-          totalPages={chapterTotal || 1}
-          onChange={(newPage) => {
-            if (newPage >= 1 && newPage <= chapterTotal) {
-              goToChapter(newPage);
-            }
-          }}
-        />
-      </View>
 
       {/* Settings Modal */}
       <Modal
