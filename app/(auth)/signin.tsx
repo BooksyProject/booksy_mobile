@@ -15,9 +15,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/contexts/ThemeContext";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SignIn = () => {
-  // const { setProfile } = useAuth();
+  const { setProfile } = useAuth();
   const { colorScheme } = useTheme();
   const router = useRouter();
   const [isPressed, setIsPressed] = useState(false);
@@ -38,7 +39,7 @@ const SignIn = () => {
         console.log(userId);
         await AsyncStorage.setItem("userId", userId);
         const profileData = await getMyProfile(userId);
-        // setProfile(profileData.userProfile);
+        setProfile(profileData.userProfile);
         router.push("home" as any);
       }
     } catch (error) {

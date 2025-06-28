@@ -130,7 +130,7 @@ const Search = () => {
             </Text>
           </View>
 
-          <View className="mt-4 space-y-4">
+          <View className="mt-4 space-y-4" style={{ gap: 10 }}>
             {booksData.map((item) => (
               <SearchBookCard key={item._id || item.title} book={item} />
             ))}
