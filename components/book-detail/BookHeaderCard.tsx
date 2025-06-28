@@ -1,23 +1,32 @@
 import { View, Text, Image, Alert, Share, Platform } from "react-native";
-import { Heart, Share2, Bell, ExternalLink } from "lucide-react-native";
+import {
+  Heart,
+  Share2,
+  Bell,
+  ExternalLink,
+  DownloadIcon,
+} from "lucide-react-native";
 import TouchableButton from "@/components/ui/TouchableButton";
 import GenreBadge from "../ui/GenreBadge";
-import { Category } from "@/dtos/CategoryDTO";
+import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
 
 interface Props {
+  _id: string;
   title: string;
   author: string;
   coverImage: string;
   likes: number;
   chapters: number;
   views: number;
-  categories: Category[];
+  categories: CategoryResponseDTO[];
   fileURL: string; // "../../../public/book/hemingway-in-our-time.epub"
 }
 
 export default function BookHeaderCard({
+  _id,
   title,
   author,
   coverImage,
@@ -73,70 +82,6 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
 #BookRecommendation #Reading #${fileName.replace(".epub", "")}`;
   };
 
-  const handleShare = async () => {
-    try {
-      const shareOptions = [
-        {
-          title: "Chia sẻ thông tin sách",
-          action: async () => {
-            const result = await Share.share({
-              message: generateShareText(),
-              title: `${title} - ${author}`,
-            });
-            return result;
-          },
-        },
-        {
-          title: "Chia sẻ với hình ảnh",
-          action: async () => {
-            const result = await Share.share({
-              message: generateShareText(),
-              url: coverImage, // Chia sẻ ảnh bìa
-              title: `${title} - ${author}`,
-            });
-            return result;
-          },
-        },
-        {
-          title: "Chia sẻ link tải app",
-          action: async () => {
-            const appStoreLink =
-              Platform.OS === "ios"
-                ? "https://apps.apple.com/app/your-book-app"
-                : "https://play.google.com/store/apps/details?id=com.yourbookapp";
-
-            const result = await Share.share({
-              message: `📚 "${title}" - ${author}\n\nTải app để đọc sách miễn phí:\n${appStoreLink}`,
-              title: `${title} - ${author}`,
-              url: appStoreLink,
-            });
-            return result;
-          },
-        },
-      ];
-
-      // Hiển thị dialog để chọn kiểu chia sẻ
-      Alert.alert("Chia sẻ sách", "Bạn muốn chia sẻ như thế nào?", [
-        { text: "Hủy", style: "cancel" },
-        {
-          text: "Thông tin sách",
-          onPress: () => shareOptions[0].action(),
-        },
-        {
-          text: "Với hình ảnh",
-          onPress: () => shareOptions[1].action(),
-        },
-        {
-          text: "Link tải app",
-          onPress: () => shareOptions[2].action(),
-        },
-      ]);
-    } catch (error) {
-      console.error("Share error:", error);
-      Alert.alert("Lỗi", "Không thể chia sẻ sách");
-    }
-  };
-
   const handleQuickShare = async () => {
     try {
       const result = await Share.share({
@@ -176,13 +121,27 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
 
   const handleHeartPress = async () => {
     try {
+      // Đảo trạng thái bookmark
       const newBookmarkStatus = !isBookmarked;
+
+      // Lưu trạng thái mới vào AsyncStorage
       await AsyncStorage.setItem(
         `bookmark_${title}`,
         newBookmarkStatus.toString()
       );
+
       setIsBookmarked(newBookmarkStatus);
 
+      // Kiểm tra trạng thái yêu thích và gọi hàm tương ứng
+      if (newBookmarkStatus) {
+        // Nếu là yêu thích (mới đánh dấu), gọi hàm likeBook
+        await likeBook(_id, "6858324823a912623fc86675");
+      } else {
+        // Nếu là bỏ yêu thích (mới bỏ dấu), gọi hàm unlikeBook
+        await unlikeBook(_id, "6858324823a912623fc86675");
+      }
+
+      // Hiển thị thông báo cho người dùng
       Alert.alert(
         newBookmarkStatus ? "Đã thêm vào yêu thích" : "Đã xóa khỏi yêu thích",
         newBookmarkStatus
@@ -191,6 +150,7 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
       );
     } catch (error) {
       console.error("Error toggling bookmark:", error);
+      Alert.alert("Có lỗi xảy ra", "Không thể thay đổi trạng thái yêu thích.");
     }
   };
 
@@ -243,6 +203,17 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
               variant="solid"
               bgColor="#1E293B"
               icon={<Share2 color="white" size={20} />}
+            />
+          </View>
+          <View className="flex flex-row gap-2">
+            {/* Nút download với tùy chọn */}
+            <TouchableButton
+              onPress={() => downloadBook(_id)}
+              size="sm"
+              rounded="full"
+              variant="solid"
+              bgColor="#1E293B"
+              icon={<DownloadIcon color="white" size={20} />}
             />
           </View>
         </View>

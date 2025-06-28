@@ -8,10 +8,20 @@ interface SaveProgressParams {
 }
 
 export async function getReadingProgress(bookId: string) {
-  console.log(`${BASE_URL}/progress/${bookId}`);
-  const res = await fetch(`${BASE_URL}/progress/${bookId}`);
-  if (!res.ok) throw new Error("Failed to fetch progress");
-  return await res.json();
+  try {
+    const res = await fetch(`${BASE_URL}/progress/${bookId}`);
+    if (!res.ok) {
+      return { success: false, message: "Failed to fetch progress" }; // Trả về thông báo lỗi mà không ném ra
+    }
+    return await res.json();
+  } catch (error) {
+    // Không báo lỗi ra màn hình, chỉ log vào console nếu cần
+    console.error("Error fetching reading progress:", error);
+    return {
+      success: false,
+      message: "An error occurred while fetching progress",
+    }; // Trả về kết quả mặc định
+  }
 }
 
 export async function saveReadingProgress(

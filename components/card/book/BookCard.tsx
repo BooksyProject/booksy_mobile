@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import BookDetailCard from "./BookDetailCard";
 import Button from "@/components/ui/button";
+import BookDetail from "@/components/book-detail/BookDetail";
 
 interface BookCardProps {
   book: BookResponseDTO;
@@ -72,14 +73,19 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
           </View>
         </View>
       </ImageBackground>
-
+      <View className="w-[90%]">
+        <Button title="READ NOW" outline={false} onPress={openModal} />
+      </View>
       <Modal
         transparent={true}
         animationType="slide"
         visible={isModalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <BookDetailCard onClose={() => setModalVisible(false)} />
+        <BookDetail
+          book={book} // Pass book data here to display in modal
+          onClose={() => setModalVisible(false)} // Close modal function
+        />
       </Modal>
     </TouchableOpacity>
   );

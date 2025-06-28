@@ -1,5 +1,8 @@
+import React from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { useTheme } from "@/contexts/ThemeContext"; // Đảm bảo bạn đã import useTheme
+import { colors } from "@/styles/colors";
 
 interface Props {
   currentPage: number;
@@ -12,19 +15,36 @@ export default function Pagination({
   totalPages,
   onChange,
 }: Props) {
+  const { colorScheme } = useTheme(); // Lấy theme hiện tại
+
+  // Chọn màu icon và background tùy theo theme sáng/tối
+  const iconColor =
+    colorScheme === "dark" ? colors.dark[100] : colors.light[100]; // Sử dụng màu sáng cho dark theme và màu tối cho light theme
+  const disabledColor = "#9CA3AF"; // Màu cho trạng thái vô hiệu
+  const backgroundColor =
+    colorScheme === "dark" ? colors.dark[100] : colors.light[300]; // Màu nền tùy theo theme
+
   return (
-    <View className="flex-row justify-between items-center mt-4">
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        paddingBottom: 16,
+        borderRadius: 8,
+      }}
+    >
       <TouchableOpacity
         disabled={currentPage === 1}
         onPress={() => onChange(currentPage - 1)}
       >
         <ChevronLeft
           size={24}
-          color={currentPage === 1 ? "#9CA3AF" : "black"} // gray-400 : light-500
+          color={currentPage === 1 ? disabledColor : iconColor} // Màu icon khi vô hiệu
         />
       </TouchableOpacity>
-
-      <Text className="text-sm font-mregular">{`Page ${currentPage} of ${totalPages}`}</Text>
 
       <TouchableOpacity
         disabled={currentPage === totalPages}
@@ -32,7 +52,7 @@ export default function Pagination({
       >
         <ChevronRight
           size={24}
-          color={currentPage === totalPages ? "#9CA3AF" : "black"}
+          color={currentPage === totalPages ? disabledColor : iconColor} // Màu icon khi vô hiệu
         />
       </TouchableOpacity>
     </View>

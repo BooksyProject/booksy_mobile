@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import "@/global.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ReaderSettingsProvider } from "@/contexts/ReaderSettingContext";
 
 SplashScreen.preventAutoHideAsync();
 const RootLayout = () => {
@@ -19,6 +20,8 @@ const RootLayout = () => {
     "Montserrat-SemiBold": require("../assets/fonts/Montserrat-SemiBold.ttf"),
     "Montserrat-Thin": require("../assets/fonts/Montserrat-Thin.ttf"),
     "JosefinSans-SemiBold": require("../assets/fonts/JosefinSans-SemiBold.ttf"),
+    "Roboto-VariableFont_wdth,wght": require("../assets/fonts/Roboto-VariableFont_wdth,wght.ttf"),
+    "RobotoMono-VariableFont_wght": require("../assets/fonts/RobotoMono-VariableFont_wght.ttf"),
   });
 
   useEffect(() => {
@@ -32,16 +35,19 @@ const RootLayout = () => {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <Stack>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
-          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
-          {/* <Stack.Screen name="chats" options={{ headerShown: false }} /> */}
-          {/* <Stack.Screen name="search" options={{ headerShown: false }} /> */}
-          {/* <Stack.Screen name="message" options={{ headerShown: false }} /> */}
-        </Stack>
+        <ReaderSettingsProvider>
+          {" "}
+          <Stack>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
+            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
+            {/* <Stack.Screen name="chats" options={{ headerShown: false }} /> */}
+            {/* <Stack.Screen name="search" options={{ headerShown: false }} /> */}
+            {/* <Stack.Screen name="message" options={{ headerShown: false }} /> */}
+          </Stack>
+        </ReaderSettingsProvider>
       </ThemeProvider>
     </AuthProvider>
   );
