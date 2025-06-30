@@ -1,18 +1,28 @@
-import { View, Text, Image, Alert, Share, Platform } from "react-native";
 import {
-  Heart,
-  Share2,
-  Bell,
-  ExternalLink,
-  DownloadIcon,
-} from "lucide-react-native";
+  View,
+  Text,
+  Image,
+  Alert,
+  Share,
+  Platform,
+  TouchableOpacity,
+} from "react-native";
+import { Heart } from "lucide-react-native";
 import TouchableButton from "@/components/ui/TouchableButton";
 import GenreBadge from "../ui/GenreBadge";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
-
+import { useTheme } from "@/contexts/ThemeContext";
+import { colors } from "@/styles/colors";
+import { ArrowIcon, DownloadIcon, LikeIcon, ShareIcon } from "../icon/Icons";
+import CircleIconButton from "../ui/circle-icon-button";
+interface StatItemProps {
+  label: string;
+  value: number;
+  textColor?: string;
+}
 interface Props {
   _id: string;
   title: string;
@@ -22,7 +32,7 @@ interface Props {
   chapters: number;
   views: number;
   categories: CategoryResponseDTO[];
-  fileURL: string; // "../../../public/book/hemingway-in-our-time.epub"
+  fileURL: string;
 }
 
 export default function BookHeaderCard({
@@ -43,6 +53,11 @@ export default function BookHeaderCard({
     checkBookmarkStatus();
     checkNotificationStatus();
   }, []);
+
+  const { colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
+  const bgColor = isDark ? colors.dark[200] : colors.light[200];
+  const textColor = isDark ? colors.dark[100] : colors.light[100];
 
   const checkBookmarkStatus = async () => {
     try {
@@ -176,49 +191,12 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
 
   return (
     <>
-      <View className="bg-book-detail w-full relative rounded-2xl px-4 pt-6 pb-4">
-        {/* Nút Bell + Share */}
+      <View className="bg-primary-100 w-full relative rounded-2xl px-4 pt-6 pb-4">
         <View className="flex flex-row justify-between mb-4">
-          <TouchableButton
-            onPress={handleBellPress}
-            size="sm"
-            rounded="full"
-            variant="solid"
-            bgColor={isNotificationEnabled ? "#EF4444" : "#1E293B"}
-            icon={
-              <Bell
-                color="white"
-                size={20}
-                fill={isNotificationEnabled ? "white" : "none"}
-              />
-            }
-          />
-
-          <View className="flex flex-row gap-2">
-            {/* Nút Share với tùy chọn */}
-            <TouchableButton
-              onPress={handleQuickShare}
-              size="sm"
-              rounded="full"
-              variant="solid"
-              bgColor="#1E293B"
-              icon={<Share2 color="white" size={20} />}
-            />
-          </View>
-          <View className="flex flex-row gap-2">
-            {/* Nút download với tùy chọn */}
-            <TouchableButton
-              onPress={() => downloadBook(_id)}
-              size="sm"
-              rounded="full"
-              variant="solid"
-              bgColor="#1E293B"
-              icon={<DownloadIcon color="white" size={20} />}
-            />
-          </View>
+          <CircleIconButton icon={ArrowIcon} onPress={handleBellPress} />
+          <CircleIconButton icon={ShareIcon} onPress={handleQuickShare} />
         </View>
 
-        {/* Ảnh bìa + tiêu đề + tác giả */}
         <View className="items-center pb-4">
           <Image
             source={{ uri: coverImage }}
@@ -227,40 +205,52 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
           />
           <View className="flex-row justify-between w-full px-8 py-4">
             <View className="flex-1 pr-4">
-              <Text className="text-white text-xl font-mbold" numberOfLines={2}>
+              <Text
+                className=" text-xl font-mbold text-dark-100"
+                numberOfLines={2}
+              >
                 {title}
               </Text>
-              <Text className="text-white text-sm font-mregular mb-1">
+              <Text className="text-dark-100 text-sm font-mregular mb-1">
                 {author}
-              </Text>
-              <Text className="text-white text-xs font-mregular opacity-60">
-                {fileURL.split("/").pop()}
               </Text>
             </View>
 
-            <TouchableButton
+            <TouchableOpacity
               onPress={handleHeartPress}
-              size="sm"
-              rounded="full"
-              variant="solid"
-              bgColor={isBookmarked ? "#EF4444" : "#1E293B"}
-              icon={
-                <Heart
-                  color="white"
-                  size={20}
-                  fill={isBookmarked ? "white" : "none"}
-                />
-              }
+              style={[
+                {
+                  width: 48,
+                  height: 48,
+                  borderRadius: 100,
+                  backgroundColor:
+                    colorScheme === "dark"
+                      ? colors.dark[100]
+                      : colors.light[100],
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 5,
+                },
+              ]}
+            >
+              <LikeIcon size={27} color={bgColor} filled={isBookmarked} />
+            </TouchableOpacity>
+            <CircleIconButton
+              icon={DownloadIcon}
+              onPress={() => downloadBook(_id)}
             />
           </View>
         </View>
 
         {/* Stats: Likes, Chapters, Views */}
         <View className="absolute -bottom-10 left-0 right-0 px-4">
-          <View className="bg-black rounded-3xl h-20 flex-row justify-between items-center w-full">
-            <StatItem label="Likes" value={likes} />
-            <StatItem label="Chapters" value={chapters} />
-            <StatItem label="Views" value={views} />
+          <View
+            className=" rounded-3xl h-20 flex-row justify-between items-center w-full"
+            style={{ backgroundColor: textColor }}
+          >
+            <StatItem label="Likes" value={likes} textColor={bgColor} />
+            <StatItem label="Chapters" value={chapters} textColor={bgColor} />
+            <StatItem label="Views" value={views} textColor={bgColor} />
           </View>
         </View>
       </View>
@@ -278,23 +268,22 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
   );
 }
 
-function StatItem({ label, value }: { label: string; value: number }) {
+function StatItem({ label, value, textColor = "#FFFFFF" }: StatItemProps) {
   const formatNumber = (num: number): string => {
-    if (num >= 1000000) {
-      return (num / 1000000).toFixed(1) + "M";
-    }
-    if (num >= 1000) {
-      return (num / 1000).toFixed(1) + "K";
-    }
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + "M";
+    if (num >= 1000) return (num / 1000).toFixed(1) + "K";
     return num.toString();
   };
 
   return (
     <View className="items-center px-8">
-      <Text className="text-white font-mbold text-lg">
+      <Text className="font-mbold text-lg" style={{ color: textColor }}>
         {formatNumber(value)}
       </Text>
-      <Text className="text-white font-mregular text-sm opacity-80">
+      <Text
+        className="font-mregular text-sm opacity-80"
+        style={{ color: textColor }}
+      >
         {label}
       </Text>
     </View>

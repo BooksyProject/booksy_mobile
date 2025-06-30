@@ -21,8 +21,7 @@ export default function Pagination({
   const iconColor =
     colorScheme === "dark" ? colors.dark[100] : colors.light[100]; // Sử dụng màu sáng cho dark theme và màu tối cho light theme
   const disabledColor = "#9CA3AF"; // Màu cho trạng thái vô hiệu
-  const backgroundColor =
-    colorScheme === "dark" ? colors.dark[100] : colors.light[300]; // Màu nền tùy theo theme
+  const backgroundColor = "transparent";
 
   return (
     <View
@@ -33,6 +32,7 @@ export default function Pagination({
         paddingHorizontal: 16,
         paddingVertical: 8,
         paddingBottom: 16,
+        backgroundColor: backgroundColor,
         borderRadius: 8,
       }}
     >

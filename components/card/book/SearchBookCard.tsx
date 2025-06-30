@@ -58,7 +58,7 @@ const SearchBookCard: React.FC<SearchBookCardProps> = ({ book }) => {
         visible={isModalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <BookDetailCard onClose={() => setModalVisible(false)} />
+        <BookDetailCard onClose={() => setModalVisible(false)} book={book} />
       </Modal>
     </>
   );

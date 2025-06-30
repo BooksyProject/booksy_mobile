@@ -1,4 +1,5 @@
 import SearchBookCard from "@/components/card/book/SearchBookCard";
+import HistorySearchCard from "@/components/card/other/HistorySearchCard";
 import SearchBar from "@/components/ui/search-bar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { BookResponseDTO } from "@/dtos/BookDTO";
@@ -109,12 +110,12 @@ const Search = () => {
 
           <View className="flex-row flex-wrap gap-2 mt-3">
             {searchHistory.map((term) => (
-              <Text
+              <HistorySearchCard
                 key={term}
-                className="border border-gray-300 rounded-full px-3 py-1 text-sm"
-              >
-                {term}
-              </Text>
+                title={term}
+                onPress={() => handleSearch(term)}
+                style={{ marginBottom: 10 }}
+              />
             ))}
           </View>
 
@@ -130,7 +131,7 @@ const Search = () => {
             </Text>
           </View>
 
-          <View className="mt-4 space-y-4">
+          <View className="mt-4 space-y-4" style={{ gap: 10 }}>
             {booksData.map((item) => (
               <SearchBookCard key={item._id || item.title} book={item} />
             ))}

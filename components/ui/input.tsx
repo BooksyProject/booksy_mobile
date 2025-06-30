@@ -49,7 +49,7 @@ const Input: React.FC<InputProps> = ({
       height,
       backgroundColor:
         backgroundColor ??
-        (colorScheme === "dark" ? colors.dark[100] : colors.light[100]),
+        (colorScheme === "dark" ? colors.dark[200] : colors.light[200]),
       borderRadius,
       borderWidth,
       borderColor: borderColor ?? "#ccc",
@@ -57,9 +57,9 @@ const Input: React.FC<InputProps> = ({
       justifyContent: "center",
     },
     input: {
-      color: colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+      color: colorScheme === "dark" ? colors.dark[100] : colors.light[100],
       fontSize: fontSize ?? 14,
-      fontFamily: fontFamily ?? "System",
+      // fontFamily: fontFamily ?? "System",
       flex: 1,
     },
   });
@@ -74,6 +74,7 @@ const Input: React.FC<InputProps> = ({
         secureTextEntry={secureTextEntry}
         onSubmitEditing={onSubmitEditing}
         style={[styles.input, inputStyle]}
+        className="font-mregular"
         {...rest}
       />
     </View>

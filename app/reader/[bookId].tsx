@@ -21,6 +21,8 @@ import {
 import Pagination from "@/components/ui/Pagination";
 import { useReaderSettings } from "@/contexts/ReaderSettingContext";
 import { WebView } from "react-native-webview";
+import { useTheme } from "@/contexts/ThemeContext";
+import { colors } from "@/styles/colors";
 
 interface ChapterData {
   _id: string;
@@ -56,7 +58,10 @@ export default function ReaderScreen() {
   const { bookId, chapter } = useLocalSearchParams();
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
-
+  const { colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
+  const bgColor = isDark ? colors.dark[200] : colors.light[200];
+  const textColor = isDark ? colors.dark[100] : colors.light[100];
   // Sử dụng Context thay vì local state
   const {
     settings,
@@ -71,7 +76,6 @@ export default function ReaderScreen() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Get current font family
   const getCurrentFontFamily = () => {
     return (
       FONT_OPTIONS.find((font) => font.key === settings.font)?.fontFamily ||
@@ -79,7 +83,6 @@ export default function ReaderScreen() {
     );
   };
 
-  // Theme styles
   const getThemeStyles = () => {
     if (settings.theme === "dark") {
       return {
@@ -143,7 +146,6 @@ export default function ReaderScreen() {
     fetchChapterTotal();
   }, [bookId, chapterNumber]);
 
-  // Lưu tiến trình
   useEffect(() => {
     if (!chapterData?._id) return;
 
@@ -175,7 +177,6 @@ export default function ReaderScreen() {
     });
   };
 
-  // Show loading while settings are being loaded
   if (loading || !chapterData || settingsLoading) {
     return (
       <View
@@ -192,8 +193,10 @@ export default function ReaderScreen() {
     );
   }
   return (
-    <View className={`flex-1 ${themeStyles.container}`}>
-      {/* Header với nút settings */}
+    <View
+      className={`flex-1 ${themeStyles.container}`}
+      style={{ backgroundColor: bgColor }}
+    >
       <SafeAreaView>
         <View className="flex-row justify-end items-center px-4 py-2 mt-10">
           <TouchableOpacity
@@ -209,7 +212,6 @@ export default function ReaderScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Nội dung chương */}
       <ScrollView
         className="flex-1 px-4 py-6"
         contentInsetAdjustmentBehavior="automatic"
@@ -220,33 +222,41 @@ export default function ReaderScreen() {
           baseStyle={{
             fontSize: settings.fontSize,
             lineHeight: settings.fontSize * 1.75,
-            color: themeStyles.content,
+            color: textColor,
             fontFamily: getCurrentFontFamily(),
           }}
           enableExperimentalMarginCollapsing={true}
           defaultTextProps={{
             style: {
-              fontFamily: getCurrentFontFamily(), // Ép font vào mọi Text bên trong
+              fontFamily: getCurrentFontFamily(),
             },
             selectable: true,
           }}
         />
-        <View
-          className={`h-20 px-6 pt-2 mb-10 border-t ${themeStyles.border} ${themeStyles.container}`}
-        >
-          <Pagination
-            currentPage={chapterNumber}
-            totalPages={chapterTotal || 1}
-            onChange={(newPage) => {
-              if (newPage >= 1 && newPage <= chapterTotal) {
-                goToChapter(newPage);
-              }
-            }}
-          />
-        </View>
       </ScrollView>
-
-      {/* Settings Modal */}
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: bgColor,
+          borderTopWidth: 1,
+          borderColor: "#808080",
+          paddingHorizontal: 24,
+          paddingVertical: 12,
+        }}
+      >
+        <Pagination
+          currentPage={chapterNumber}
+          totalPages={chapterTotal || 1}
+          onChange={(newPage) => {
+            if (newPage >= 1 && newPage <= chapterTotal) {
+              goToChapter(newPage);
+            }
+          }}
+        />
+      </View>
       <Modal
         visible={showSettings}
         animationType="slide"
@@ -262,7 +272,6 @@ export default function ReaderScreen() {
   }}"
         >
           <View className={`${themeStyles.modal} rounded-t-3xl p-6 max-h-96`}>
-            {/* Modal Header */}
             <View className="flex-row justify-between items-center mb-6">
               <Text className={`text-xl font-bold ${themeStyles.text}`}>
                 Cài đặt đọc
@@ -277,7 +286,6 @@ export default function ReaderScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Theme Selection */}
               <View className="mb-6">
                 <Text
                   className={`text-lg font-semibold mb-3 ${themeStyles.text}`}
