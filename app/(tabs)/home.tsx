@@ -6,8 +6,6 @@ import { useEffect, useState } from "react";
 import { BookResponseDTO } from "@/dtos/BookDTO";
 import { getAllBooks } from "@/lib/service/book.service";
 import BookCard from "@/components/card/book/BookCard";
-import CircleIconButton from "@/components/ui/circle-icon-button";
-import { BellIcon, LikeIcon } from "@/components/icon/Icons";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { getAllCategories } from "@/lib/service/category.service";
 
@@ -74,13 +72,6 @@ const Home = () => {
       }}
       contentContainerStyle={{ paddingBottom: 24 }}
     >
-      <View className="w-full items-end mb-4">
-        <CircleIconButton
-          icon={LikeIcon}
-          onPress={() => console.log("Pressed")}
-        />
-      </View>
-
       <View className="mb-6">
         <Text
           className="text-[24px] font-msemibold"

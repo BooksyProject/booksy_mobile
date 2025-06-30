@@ -17,7 +17,6 @@ import BookDetailCard from "./BookDetailCard";
 
 interface BookCardProps {
   book: BookResponseDTO;
-  // onPress?: () => void;
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book }) => {
@@ -57,7 +56,6 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
               <Text
                 className="text-[16px] text-dark-200 font-semibold max-w-[130px]"
                 numberOfLines={1}
-                // style={{ color: textColor }}
               >
                 {book.title}
               </Text>
@@ -68,23 +66,17 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
                 {book.author}
               </Text>
             </View>
-            <HeartIcon size={20} color="black" />
+            {/* <HeartIcon size={20} color="black" /> */}
           </View>
         </View>
       </ImageBackground>
-      {/* <View className="w-[90%]">
-        <Button title="READ NOW" outline={false} onPress={openModal} />
-      </View> */}
       <Modal
         transparent={true}
         animationType="slide"
         visible={isModalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <BookDetailCard
-          book={book} // Pass book data here to display in modal
-          onClose={() => setModalVisible(false)} // Close modal function
-        />
+        <BookDetailCard book={book} onClose={() => setModalVisible(false)} />
       </Modal>
     </TouchableOpacity>
   );

@@ -1,27 +1,21 @@
 import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import { View, TouchableOpacity } from "react-native";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { useTheme } from "@/contexts/ThemeContext"; // Đảm bảo bạn đã import useTheme
-import { colors } from "@/styles/colors";
 
 interface Props {
   currentPage: number;
   totalPages: number;
+  iconColor: string;
   onChange: (page: number) => void;
 }
 
 export default function Pagination({
   currentPage,
   totalPages,
+  iconColor,
   onChange,
 }: Props) {
-  const { colorScheme } = useTheme(); // Lấy theme hiện tại
-
-  // Chọn màu icon và background tùy theo theme sáng/tối
-  const iconColor =
-    colorScheme === "dark" ? colors.dark[100] : colors.light[100]; // Sử dụng màu sáng cho dark theme và màu tối cho light theme
-  const disabledColor = "#9CA3AF"; // Màu cho trạng thái vô hiệu
-  const backgroundColor = "transparent";
+  const disabledColor = "#9CA3AF";
 
   return (
     <View
@@ -32,7 +26,7 @@ export default function Pagination({
         paddingHorizontal: 16,
         paddingVertical: 8,
         paddingBottom: 16,
-        backgroundColor: backgroundColor,
+        backgroundColor: "transparent",
         borderRadius: 8,
       }}
     >
@@ -42,7 +36,7 @@ export default function Pagination({
       >
         <ChevronLeft
           size={24}
-          color={currentPage === 1 ? disabledColor : iconColor} // Màu icon khi vô hiệu
+          color={currentPage === 1 ? disabledColor : iconColor}
         />
       </TouchableOpacity>
 
@@ -52,7 +46,7 @@ export default function Pagination({
       >
         <ChevronRight
           size={24}
-          color={currentPage === totalPages ? disabledColor : iconColor} // Màu icon khi vô hiệu
+          color={currentPage === totalPages ? disabledColor : iconColor}
         />
       </TouchableOpacity>
     </View>
