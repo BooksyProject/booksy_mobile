@@ -1,15 +1,17 @@
+import { SettingResponseDTO } from "@/dtos/SettingDTO";
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 export async function updateSetting(
-  userId: string,
+  userId: string | null,
   updatedFields: Partial<{
-    fontSize: string;
+    fontSize: boolean;
     fontFamily: string;
-    Theme: string;
-    lineSpacing: string;
+    Theme: boolean;
+    lineSpacing: number;
   }>
 ) {
-  const res = await fetch(`${BASE_URL}/api/setting/update-setting`, {
-    method: "PUT",
+  const res = await fetch(`${BASE_URL}/setting/update-setting`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
@@ -25,4 +27,24 @@ export async function updateSetting(
   }
 
   return await res.json();
+}
+
+export async function getSettingByUserId(
+  userId: string
+): Promise<SettingResponseDTO> {
+  try {
+    const response = await fetch(
+      `${BASE_URL}/setting/get-my-setting?userId=${userId}`
+    );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch setting");
+    }
+
+    const data = await response.json();
+    return data as SettingResponseDTO;
+  } catch (error: any) {
+    console.error("Error fetching setting:", error.message);
+    throw error;
+  }
 }

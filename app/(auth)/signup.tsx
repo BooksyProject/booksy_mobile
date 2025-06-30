@@ -107,17 +107,22 @@ const SignUp = () => {
         className="w-full h-full"
         contentContainerStyle={{
           flexGrow: 1,
-          justifyContent: "center",
-          alignItems: "center",
           backgroundColor:
             colorScheme === "dark" ? colors.dark[200] : colors.light[200],
         }}
         keyboardShouldPersistTaps="handled"
       >
-        <View className="w-full px-7" style={{ flex: 1 }}>
+        <View
+          className="w-full px-7"
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
           <View className="w-full space-y-10">
             <Text
-              className="font-msemibold text-[36px] text-center"
+              className="font-msemibold mb-5 text-[36px] text-center"
               style={{
                 color:
                   colorScheme === "dark" ? colors.dark[100] : colors.light[100],
@@ -152,6 +157,31 @@ const SignUp = () => {
               }}
               onRegisterPress={handleOtpRequest}
             />
+            <View className="mt-4 mb-10 w-full flex flex-row items-center justify-center">
+              <Text
+                className="font-mregular text-[16px]  "
+                style={{
+                  color:
+                    colorScheme === "dark"
+                      ? colors.dark[100]
+                      : colors.light[100],
+                }}
+              >
+                Already have an account?{" "}
+                <Text
+                  onPress={() => router.push("signin" as any)}
+                  style={{
+                    color:
+                      colorScheme === "dark"
+                        ? colors.dark[100]
+                        : colors.light[100],
+                  }}
+                  className="font-mbold  text-[16px] "
+                >
+                  Login
+                </Text>
+              </Text>
+            </View>
 
             <OTPModal
               visible={isOtpStep}

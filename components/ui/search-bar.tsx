@@ -32,6 +32,7 @@ export default function SearchBar({
         onSubmitEditing={handleSearch}
         className="flex-1 py-2 text-base font-mmedium"
         style={{ color: iconColor }}
+        placeholderTextColor={colorScheme === "dark" ? "#aaa" : "#888"}
       />
       <Pressable onPress={handleSearch}>
         <SearchIcon size={20} color={iconColor} />

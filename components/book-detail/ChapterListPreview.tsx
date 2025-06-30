@@ -3,6 +3,8 @@ import useGoToReader from "@/hooks/goToReader";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
 import SeeAllChapter from "./SeeAllChapter"; // Import modal
+import { useTheme } from "@/contexts/ThemeContext";
+import { colors } from "@/styles/colors";
 
 interface Props {
   bookId: string;
@@ -13,7 +15,11 @@ export default function ChapterListPreview({ bookId, chapters }: Props) {
   const goToReader = useGoToReader();
   const [showAll, setShowAll] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
-
+  const { colorScheme } = useTheme();
+  const isDark = colorScheme === "dark";
+  const [page, setPage] = useState(1);
+  const bgColor = isDark ? colors.dark[200] : colors.light[200];
+  const textColor = isDark ? colors.dark[100] : colors.light[100];
   const openModal = async () => {
     setModalVisible(true); // Mở modal khi nhấn vào See all
   };
@@ -27,11 +33,11 @@ export default function ChapterListPreview({ bookId, chapters }: Props) {
   return (
     <View className="mt-6 px-4">
       <View className="flex-row justify-between mb-2">
-        <Text className="font-msemibold text-lg">
+        <Text className="font-msemibold text-lg" style={{ color: textColor }}>
           {chapters.length} chapters
         </Text>
         <TouchableOpacity onPress={openModal}>
-          <Text className="text-custom-red font-mregular text-base">
+          <Text className="text-primary-100 font-mregular text-base">
             See all
           </Text>
         </TouchableOpacity>
@@ -41,10 +47,13 @@ export default function ChapterListPreview({ bookId, chapters }: Props) {
         {displayedChapters.map((ch, index) => (
           <View
             key={index}
-            className="flex-row justify-between py-2 border-b border-gray-200"
+            className="flex-row justify-between py-2 border-b border-[#808080]"
           >
             <TouchableOpacity onPress={() => handleChapterPress(index + 1)}>
-              <Text className="text-sm font-mregular text-light-500">
+              <Text
+                className="text-base font-mregular "
+                style={{ color: textColor }}
+              >
                 {ch.chapterTitle}
               </Text>
             </TouchableOpacity>

@@ -41,13 +41,7 @@ const Button: React.FC<ButtonProps> = ({
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
 
-  const backgroundColor = outline
-    ? "transparent"
-    : disabled
-    ? // ? isDark
-      colors.dark[100]
-    : colors.light[100];
-  // : color ?? colors.primary[100];
+  const backgroundColor = isDark ? colors.dark[100] : colors.light[100];
 
   const textColor =
     fontColor ?? (isDark ? colors.dark[200] : colors.light[200]);

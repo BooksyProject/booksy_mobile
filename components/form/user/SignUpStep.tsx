@@ -65,7 +65,7 @@ const SignUpSteps: React.FC<Props> = ({
   switch (step) {
     case 1:
       return (
-        <View className="flex flex-col space-y-8 w-full">
+        <View className="flex flex-col space-y-8 w-full" style={{ gap: 20 }}>
           <View className="relative w-full">
             <View
               className="absolute left-3 -top-2  flex flex-row items-center px-1 z-10"
@@ -201,7 +201,7 @@ const SignUpSteps: React.FC<Props> = ({
       );
     case 2:
       return (
-        <View className="w-full space-y-10">
+        <View className="w-full space-y-10" style={{ gap: 20 }}>
           <View className="mb-3">
             <Text className="mb-1 text-sm ">
               Gender <Text style={{ color: "red" }}>*</Text>
@@ -255,7 +255,7 @@ const SignUpSteps: React.FC<Props> = ({
       );
     case 3:
       return (
-        <View className="w-full space-y-8">
+        <View className="w-full space-y-8" style={{ gap: 20 }}>
           <View className="relative w-full">
             <View
               className="absolute left-3 -top-2  flex flex-row items-center px-1 z-10"

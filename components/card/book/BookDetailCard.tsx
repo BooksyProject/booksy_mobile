@@ -1,57 +1,113 @@
-import { ArrowIcon } from "@/components/icon/Icons";
+import { ScrollView, Text, View } from "react-native";
+import BookHeaderCard from "@/components/book-detail/BookHeaderCard";
+import BookDescription from "@/components/book-detail/BookDescription";
+import ChapterListPreview from "@/components/book-detail/ChapterListPreview";
+import useReadingProgressManager from "@/hooks/useReadingProgressManager";
+import useGoToReader from "@/hooks/goToReader";
+import React, { useEffect, useState } from "react";
+import { BookDTO, BookResponseDTO } from "@/dtos/BookDTO";
+import { getBookDetail } from "@/lib/service/book.service";
+import { getChaptersByBook } from "@/lib/service/chapter.service";
+import { ChapterInf } from "@/dtos/ChapterDTO";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
-import React, { useRef, useState } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  TouchableOpacity,
-  Modal,
-  TextInput,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from "react-native";
-
+import Button from "@/components/ui/button";
 interface BookDetailCardProps {
+  book: BookResponseDTO;
   onClose: () => void;
 }
 
-const BookDetailCard = ({ onClose }: BookDetailCardProps) => {
+const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
   const { colorScheme } = useTheme();
-  const iconColor =
-    colorScheme === "dark" ? colors.dark[100] : colors.light[100];
+  const isDark = colorScheme === "dark";
+  const bgColor = isDark ? colors.dark[200] : colors.light[200];
+  const bookId = book?._id;
+
+  const { progress, loading } = useReadingProgressManager(bookId);
+  const goToReader = useGoToReader();
+
+  const [bookDetail, setBookDetail] = useState<BookDTO | null>(null);
+  const [chapters, setChapters] = useState<ChapterInf[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!bookId) return;
+
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+
+        // ✅ Fetch cả 2 cùng lúc
+        const [bookData, chaptersData] = await Promise.all([
+          getBookDetail(bookId),
+          getChaptersByBook(bookId),
+        ]);
+
+        console.log("Book detail:", bookData);
+        console.log("Chapters:", chaptersData);
+
+        // ✅ Set data đúng cách
+        if (bookData.success) {
+          setBookDetail(bookData.data);
+        }
+
+        if (chaptersData && Array.isArray(chaptersData)) {
+          setChapters(chaptersData);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [bookId]);
+
+  if (isLoading) {
+    return (
+      <ScrollView className="flex-1 bg-book-background">
+        <Text className="text-center mt-10 text-white">Loading...</Text>
+      </ScrollView>
+    );
+  }
+
+  if (!bookDetail) {
+    return (
+      <ScrollView className="flex-1 bg-book-background">
+        <Text className="text-center mt-10 text-white">Book not found</Text>
+      </ScrollView>
+    );
+  }
 
   return (
-    <View className="flex-1 bg-black bg-opacity-50">
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        style={{ flex: 1 }}
-      >
-        <ScrollView
-          style={{
-            backgroundColor:
-              colorScheme === "dark" ? colors.dark[200] : colors.light[200],
-          }}
-          contentContainerStyle={{ paddingBottom: 100, paddingTop: 20 }}
-          className="flex-1 px-[20px]"
-        >
-          <View className="flex-row items-center mb-4">
-            <TouchableOpacity onPress={onClose} className="mr-4">
-              <ArrowIcon size={24} color={iconColor} />
-            </TouchableOpacity>
-            <Text
-              className="text-xl font-semibold"
-              style={{ color: iconColor }}
-            >
-              Book Details
-            </Text>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+    <ScrollView className="flex-1 " style={{ backgroundColor: bgColor }}>
+      <BookHeaderCard
+        _id={bookDetail._id}
+        title={bookDetail.title}
+        author={bookDetail.author}
+        coverImage={bookDetail.coverImage}
+        categories={bookDetail.categories}
+        likes={bookDetail.likes}
+        chapters={chapters.length}
+        views={bookDetail.views}
+        fileURL={bookDetail.fileURL}
+      />
+
+      <BookDescription description={bookDetail.description} />
+
+      <ChapterListPreview bookId={bookDetail._id} chapters={chapters} />
+
+      {!loading && (
+        <View className="mt-6 mx-safe-or-3 mb-2">
+          <Button
+            title={progress ? "Continue Reading" : "Start Reading"}
+            onPress={() => goToReader(bookId, progress?.chapterNumber || 1)}
+            outline={!!progress}
+          />
+        </View>
+      )}
+    </ScrollView>
   );
 };
 
