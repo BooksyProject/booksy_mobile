@@ -36,17 +36,10 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-
-        // ✅ Fetch cả 2 cùng lúc
         const [bookData, chaptersData] = await Promise.all([
           getBookDetail(bookId),
           getChaptersByBook(bookId),
         ]);
-
-        console.log("Book detail:", bookData);
-        console.log("Chapters:", chaptersData);
-
-        // ✅ Set data đúng cách
         if (bookData.success) {
           setBookDetail(bookData.data);
         }
@@ -92,6 +85,7 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
         chapters={chapters.length}
         views={bookDetail.views}
         fileURL={bookDetail.fileURL}
+        onClose={onClose}
       />
 
       <BookDescription description={bookDetail.description} />
