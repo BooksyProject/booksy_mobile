@@ -84,7 +84,6 @@ export default function ReaderScreen() {
     );
   };
 
-  // Theme styles
   const getThemeStyles = () => {
     if (settings.theme === "dark") {
       return {
@@ -110,7 +109,6 @@ export default function ReaderScreen() {
 
   const themeStyles = getThemeStyles();
 
-  // Fetch nội dung chương
   useEffect(() => {
     if (!bookId) return;
 
@@ -148,7 +146,6 @@ export default function ReaderScreen() {
     fetchChapterTotal();
   }, [bookId, chapterNumber]);
 
-  // Lưu tiến trình
   useEffect(() => {
     if (!chapterData?._id) return;
 
