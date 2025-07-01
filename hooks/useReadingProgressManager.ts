@@ -4,7 +4,10 @@ import {
 } from "@/lib/service/readingProgress.service";
 import { useEffect, useState } from "react";
 
-export default function useReadingProgressManager(bookId?: string) {
+export default function useReadingProgressManager(
+  bookId?: string,
+  userId?: string
+) {
   const [progress, setProgress] = useState<null | {
     chapterId: string;
     chapterNumber: number;
@@ -13,11 +16,11 @@ export default function useReadingProgressManager(bookId?: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!bookId) return;
+    if (!bookId || !userId) return;
 
     const fetchProgress = async () => {
       try {
-        const data = await getReadingProgress(bookId);
+        const data = await getReadingProgress(bookId, userId);
         console.log(data, "data of progress get");
         setProgress(data);
       } catch (err) {

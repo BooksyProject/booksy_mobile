@@ -7,7 +7,7 @@ interface SaveProgressParams {
   percentage?: number;
 }
 
-export async function getReadingProgress(bookId: string) {
+export async function getReadingProgress(bookId: string, userId: string) {
   try {
     const res = await fetch(`${BASE_URL}/progress/${bookId}`);
     if (!res.ok) {
