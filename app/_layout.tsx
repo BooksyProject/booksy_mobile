@@ -36,7 +36,6 @@ const RootLayout = () => {
     <AuthProvider>
       <ThemeProvider>
         <ReaderSettingsProvider>
-          {" "}
           <Stack>
             <Stack.Screen name="index" options={{ headerShown: false }} />
             {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}

@@ -219,7 +219,7 @@ export default function ReaderScreen() {
 
       {/* Nội dung chương */}
       <ScrollView
-        className="flex-1 px-4 py-6"
+        className="flex-1 px-4 pt-6 pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
         <RenderHTML
@@ -241,7 +241,7 @@ export default function ReaderScreen() {
         />
       </ScrollView>
       <View
-        className={`absolute bottom-0 left-0 right-0 border-t px-6 py-2 ${themeStyles.border} ${themeStyles.container}`}
+        className={`absolute bottom-0 left-0 right-0 border-t px-6 pt-2 pb-16 ${themeStyles.border} ${themeStyles.container}`}
       >
         <Pagination
           currentPage={chapterNumber}

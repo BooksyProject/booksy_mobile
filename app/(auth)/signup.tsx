@@ -167,7 +167,7 @@ const SignUp = () => {
                       : colors.light[100],
                 }}
               >
-                Already have an account?{" "}
+                Already have an account?
                 <Text
                   onPress={() => router.push("signin" as any)}
                   style={{

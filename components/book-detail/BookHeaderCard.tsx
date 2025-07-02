@@ -237,10 +237,10 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
             >
               <LikeIcon size={27} color={bgColor} filled={isBookmarked} />
             </TouchableOpacity>
-            <CircleIconButton
+            {/* <CircleIconButton
               icon={DownloadIcon}
               onPress={() => downloadBook(_id)}
-            />
+            /> */}
           </View>
         </View>
 
