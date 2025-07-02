@@ -45,7 +45,6 @@ const RootLayout = () => {
             {/* <Stack.Screen name="user" options={{ headerShown: false }} /> */}
             {/* <Stack.Screen name="chats" options={{ headerShown: false }} /> */}
             {/* <Stack.Screen name="search" options={{ headerShown: false }} /> */}
-            {/* <Stack.Screen name="message" options={{ headerShown: false }} /> */}
             <Stack.Screen
               name="reader/[bookId]"
               options={{ headerShown: false }}

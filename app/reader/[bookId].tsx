@@ -21,6 +21,7 @@ import {
 import Pagination from "@/components/ui/Pagination";
 import { useReaderSettings } from "@/contexts/ReaderSettingContext";
 import { WebView } from "react-native-webview";
+import { ArrowIcon, SettingsIcon } from "@/components/icon/Icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 
@@ -58,11 +59,8 @@ export default function ReaderScreen() {
   const { bookId, chapter } = useLocalSearchParams();
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
-  const { colorScheme } = useTheme();
-  const isDark = colorScheme === "dark";
-  const bgColor = isDark ? colors.dark[200] : colors.light[200];
-  const textColor = isDark ? colors.dark[100] : colors.light[100];
   // Sử dụng Context thay vì local state
+
   const {
     settings,
     updateTheme,
@@ -70,12 +68,15 @@ export default function ReaderScreen() {
     updateFontSize,
     isLoading: settingsLoading,
   } = useReaderSettings();
+  const isReaderDark = settings.theme === "dark";
+  const textColor = isReaderDark ? "#F1EEE3" : "#26212A";
 
   const { save, updateProgress } = useReadingProgressManager(bookId as string);
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
+  // Get current font family
   const getCurrentFontFamily = () => {
     return (
       FONT_OPTIONS.find((font) => font.key === settings.font)?.fontFamily ||
@@ -83,26 +84,27 @@ export default function ReaderScreen() {
     );
   };
 
+  // Theme styles
   const getThemeStyles = () => {
     if (settings.theme === "dark") {
       return {
-        container: "bg-gray-900",
-        text: "text-gray-100",
-        content: "#e5e7eb",
-        border: "border-gray-700",
-        modal: "bg-gray-800",
-        button: "bg-gray-700",
-        buttonText: "text-gray-200",
+        container: "bg-[#26212A]",
+        text: "text-[#F1EEE3]",
+        content: "#F1EEE3",
+        border: "border-[#808080]",
+        modal: "bg-[#252525]",
+        button: "bg-[#F1EEE3]",
+        buttonText: "text-[#26212A]",
       };
     }
     return {
-      container: "bg-white",
-      text: "text-gray-900",
-      content: "#1f2937",
-      border: "border-gray-200",
+      container: "bg-[#F1EEE3]",
+      text: "text-[#26212A]",
+      content: "#26212A",
+      border: "border-[#808080]",
       modal: "bg-white",
-      button: "bg-gray-100",
-      buttonText: "text-gray-800",
+      button: "bg-[#26212A]",
+      buttonText: "text-[#F1EEE3]",
     };
   };
 
@@ -146,6 +148,7 @@ export default function ReaderScreen() {
     fetchChapterTotal();
   }, [bookId, chapterNumber]);
 
+  // Lưu tiến trình
   useEffect(() => {
     if (!chapterData?._id) return;
 
@@ -177,6 +180,7 @@ export default function ReaderScreen() {
     });
   };
 
+  // Show loading while settings are being loaded
   if (loading || !chapterData || settingsLoading) {
     return (
       <View
@@ -192,26 +196,28 @@ export default function ReaderScreen() {
       </View>
     );
   }
+
   return (
-    <View
-      className={`flex-1 ${themeStyles.container}`}
-      style={{ backgroundColor: bgColor }}
-    >
+    <View className={`flex-1 ${themeStyles.container}`}>
+      {/* Header với nút settings */}
       <SafeAreaView>
-        <View className="flex-row justify-end items-center px-4 py-2 mt-10">
+        <View className="flex-row justify-between items-center px-4 py-2 mt-10">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="p-2 rounded-lg"
+          >
+            <ArrowIcon color={textColor} size={27} />
+          </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowSettings(true)}
             className={`p-2 rounded-lg`}
           >
-            <Ionicons
-              name="settings-outline"
-              size={20}
-              color={settings.theme === "dark" ? "white" : "none"}
-            />
+            <SettingsIcon color={textColor} size={27} />
           </TouchableOpacity>
         </View>
       </SafeAreaView>
 
+      {/* Nội dung chương */}
       <ScrollView
         className="flex-1 px-4 py-6"
         contentInsetAdjustmentBehavior="automatic"
@@ -222,34 +228,25 @@ export default function ReaderScreen() {
           baseStyle={{
             fontSize: settings.fontSize,
             lineHeight: settings.fontSize * 1.75,
-            color: textColor,
+            color: themeStyles.content,
             fontFamily: getCurrentFontFamily(),
           }}
           enableExperimentalMarginCollapsing={true}
           defaultTextProps={{
             style: {
-              fontFamily: getCurrentFontFamily(),
+              fontFamily: getCurrentFontFamily(), // Ép font vào mọi Text bên trong
             },
             selectable: true,
           }}
         />
       </ScrollView>
       <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: bgColor,
-          borderTopWidth: 1,
-          borderColor: "#808080",
-          paddingHorizontal: 24,
-          paddingVertical: 12,
-        }}
+        className={`absolute bottom-0 left-0 right-0 border-t px-6 py-2 ${themeStyles.border} ${themeStyles.container}`}
       >
         <Pagination
           currentPage={chapterNumber}
           totalPages={chapterTotal || 1}
+          iconColor={textColor}
           onChange={(newPage) => {
             if (newPage >= 1 && newPage <= chapterTotal) {
               goToChapter(newPage);
@@ -257,6 +254,8 @@ export default function ReaderScreen() {
           }}
         />
       </View>
+
+      {/* Settings Modal */}
       <Modal
         visible={showSettings}
         animationType="slide"
@@ -272,27 +271,29 @@ export default function ReaderScreen() {
   }}"
         >
           <View className={`${themeStyles.modal} rounded-t-3xl p-6 max-h-96`}>
+            {/* Modal Header */}
             <View className="flex-row justify-between items-center mb-6">
-              <Text className={`text-xl font-bold ${themeStyles.text}`}>
-                Cài đặt đọc
+              <Text className={`text-xl font-mbold ${themeStyles.text}`}>
+                Setting
               </Text>
               <TouchableOpacity onPress={() => setShowSettings(false)}>
                 <Ionicons
                   name="close"
                   size={24}
-                  color={settings.theme === "dark" ? "#fff" : "#000"}
+                  color={settings.theme === "dark" ? "#F1EEE3" : "#26212A"}
                 />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
+              {/* Theme Selection */}
               <View className="mb-6">
                 <Text
-                  className={`text-lg font-semibold mb-3 ${themeStyles.text}`}
+                  className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}
                 >
-                  Chế độ hiển thị
+                  Display mode
                 </Text>
-                <View className="flex-row space-x-3">
+                <View className="flex-row space-x-3" style={{ gap: 8 }}>
                   <TouchableOpacity
                     onPress={() => updateTheme("light")}
                     className={`flex-1 p-3 rounded-lg border-2 ${
@@ -308,13 +309,13 @@ export default function ReaderScreen() {
                         color="#f59e0b"
                       />
                       <Text
-                        className={`ml-2 font-medium ${
+                        className={`ml-2 font-mmedium ${
                           settings.theme === "light"
                             ? "text-blue-600"
                             : themeStyles.buttonText
                         }`}
                       >
-                        Sáng
+                        Light
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -330,13 +331,13 @@ export default function ReaderScreen() {
                     <View className="flex-row items-center justify-center">
                       <Ionicons name="moon-outline" size={20} color="#6366f1" />
                       <Text
-                        className={`ml-2 font-medium ${
+                        className={`ml-2 font-mmedium ${
                           settings.theme === "dark"
                             ? "text-blue-400"
                             : themeStyles.buttonText
                         }`}
                       >
-                        Tối
+                        Dark
                       </Text>
                     </View>
                   </TouchableOpacity>
@@ -346,9 +347,9 @@ export default function ReaderScreen() {
               {/* Font Size */}
               <View className="mb-6">
                 <Text
-                  className={`text-lg font-semibold mb-3 ${themeStyles.text}`}
+                  className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}
                 >
-                  Kích thước chữ
+                  Font size
                 </Text>
                 <View className="flex-row items-center justify-between">
                   <TouchableOpacity
@@ -362,11 +363,11 @@ export default function ReaderScreen() {
                     <Ionicons
                       name="remove"
                       size={20}
-                      color={settings.theme === "dark" ? "#fff" : "#000"}
+                      color={settings.theme === "dark" ? "#26212A" : "#F1EEE3"}
                     />
                   </TouchableOpacity>
 
-                  <Text className={`mx-4 ${themeStyles.text}`}>
+                  <Text className={`mx-4 font-mmedium ${themeStyles.text}`}>
                     {settings.fontSize}px
                   </Text>
 
@@ -381,7 +382,7 @@ export default function ReaderScreen() {
                     <Ionicons
                       name="add"
                       size={20}
-                      color={settings.theme === "dark" ? "#fff" : "#000"}
+                      color={settings.theme === "dark" ? "#26212A" : "#F1EEE3"}
                     />
                   </TouchableOpacity>
                 </View>
@@ -390,11 +391,11 @@ export default function ReaderScreen() {
               {/* Font Selection */}
               <View>
                 <Text
-                  className={`text-lg font-semibold mb-3 ${themeStyles.text}`}
+                  className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}
                 >
-                  Phông chữ
+                  Font family
                 </Text>
-                <View className="space-y-2">
+                <View className="space-y-2" style={{ gap: 10 }}>
                   {FONT_OPTIONS.map((font) => (
                     <TouchableOpacity
                       key={font.key}
@@ -423,7 +424,7 @@ export default function ReaderScreen() {
                         }`}
                         style={{ fontFamily: font.fontFamily }}
                       >
-                        Mẫu văn bản với phông chữ này
+                        Sample text with this font
                       </Text>
                     </TouchableOpacity>
                   ))}

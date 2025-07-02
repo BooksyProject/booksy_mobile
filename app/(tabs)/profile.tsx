@@ -179,10 +179,6 @@ const Profile = () => {
           >
             {profile?.firstName} {profile?.lastName}
           </Text>
-          <CircleIconButton
-            icon={LikeIcon}
-            onPress={() => console.log("Like pressed")}
-          />
         </View>
 
         <Image
@@ -227,7 +223,7 @@ const Profile = () => {
         </View>
 
         {/* Font */}
-        <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
+        {/* <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
           <FontIcon size={30} color={textColor} />
           <SelectBox
             value={font}
@@ -241,10 +237,10 @@ const Profile = () => {
               { label: "Open Sans", value: "OpenSans" },
             ]}
           />
-        </View>
+        </View> */}
 
         {/* Font Size */}
-        <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
+        {/* <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
           <FontLineIcon size={30} color={textColor} />
           <RadioGroup
             value={fontSize}
@@ -257,10 +253,10 @@ const Profile = () => {
               { label: "Small", value: "Small" },
             ]}
           />
-        </View>
+        </View> */}
 
         {/* Line Spacing */}
-        <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
+        {/* <View className="flex-row items-center space-x-10" style={{ gap: 20 }}>
           <LineSpacingIcon size={30} color={textColor} />
           <SelectBox
             value={lineHeight}
@@ -274,7 +270,7 @@ const Profile = () => {
               { label: "2.0", value: 2.0 },
             ]}
           />
-        </View>
+        </View> */}
 
         {/* Logout */}
         <View className="mt-6">

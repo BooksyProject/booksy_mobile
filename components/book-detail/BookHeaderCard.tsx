@@ -7,8 +7,6 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import { Heart } from "lucide-react-native";
-import TouchableButton from "@/components/ui/TouchableButton";
 import GenreBadge from "../ui/GenreBadge";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
@@ -33,6 +31,7 @@ interface Props {
   views: number;
   categories: CategoryResponseDTO[];
   fileURL: string;
+  onClose: () => void;
 }
 
 export default function BookHeaderCard({
@@ -45,6 +44,7 @@ export default function BookHeaderCard({
   views,
   categories,
   fileURL,
+  onClose,
 }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
@@ -146,14 +146,16 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
       );
 
       setIsBookmarked(newBookmarkStatus);
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
 
       // Kiểm tra trạng thái yêu thích và gọi hàm tương ứng
       if (newBookmarkStatus) {
         // Nếu là yêu thích (mới đánh dấu), gọi hàm likeBook
-        await likeBook(_id, "6858324823a912623fc86675");
+        await likeBook(_id, userId);
       } else {
         // Nếu là bỏ yêu thích (mới bỏ dấu), gọi hàm unlikeBook
-        await unlikeBook(_id, "6858324823a912623fc86675");
+        await unlikeBook(_id, userId);
       }
 
       // Hiển thị thông báo cho người dùng
@@ -193,7 +195,7 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
     <>
       <View className="bg-primary-100 w-full relative rounded-2xl px-4 pt-6 pb-4">
         <View className="flex flex-row justify-between mb-4">
-          <CircleIconButton icon={ArrowIcon} onPress={handleBellPress} />
+          <CircleIconButton icon={ArrowIcon} onPress={onClose} />
           <CircleIconButton icon={ShareIcon} onPress={handleQuickShare} />
         </View>
 
