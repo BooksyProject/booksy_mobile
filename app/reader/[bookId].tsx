@@ -32,7 +32,7 @@ interface ChapterData {
   content: string;
 }
 
-const IMAGE_BASE_URL = "http://172.20.10.3:3000/";
+const IMAGE_BASE_URL = "http://192.168.1.214:3000/";
 
 const FONT_OPTIONS = [
   {
