@@ -7,15 +7,15 @@ import {
   Platform,
   TouchableOpacity,
 } from "react-native";
-import GenreBadge from "../ui/GenreBadge";
+import GenreBadge from "../../ui/genre-badge";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
-import { ArrowIcon, DownloadIcon, LikeIcon, ShareIcon } from "../icon/Icons";
-import CircleIconButton from "../ui/circle-icon-button";
+import { ArrowIcon, DownloadIcon, LikeIcon, ShareIcon } from "../../icon/Icons";
+import CircleIconButton from "../../ui/circle-icon-button";
 interface StatItemProps {
   label: string;
   value: number;

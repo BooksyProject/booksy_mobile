@@ -334,11 +334,11 @@ const Home = () => {
         >
           Continue reading
         </Text>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Text className="text-primary-100 text-[14px] font-mmedium">
             See all
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       {continueReadingBooks.length > 0 ? (
@@ -365,11 +365,11 @@ const Home = () => {
         >
           May you like
         </Text>
-        <TouchableOpacity>
+        {/* <TouchableOpacity>
           <Text className="text-primary-100 text-[14px] font-mmedium">
             See all
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
       <View className="pb-20">

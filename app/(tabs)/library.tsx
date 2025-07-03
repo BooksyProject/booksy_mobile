@@ -29,7 +29,6 @@ const Library = () => {
   const [booksData, setBooksData] = useState<BookWithProgress[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
-  const [refreshing, setRefreshing] = useState(false); // Dự phòng nếu sau này cần pull-to-refresh
 
   const getPercentage = (chapterNumber: number, totalChapters: number) => {
     if (totalChapters === 0) return 0;

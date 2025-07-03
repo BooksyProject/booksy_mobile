@@ -2,7 +2,7 @@ import { ChapterInf } from "@/dtos/ChapterDTO";
 import useGoToReader from "@/hooks/goToReader";
 import { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView, Modal } from "react-native";
-import SeeAllChapter from "./SeeAllChapter"; // Import modal
+import SeeAllChapter from "../../modal/chapter/SeeAllChapter"; // Import modal
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 

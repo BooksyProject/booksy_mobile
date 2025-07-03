@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
-import BookHeaderCard from "@/components/book-detail/BookHeaderCard";
-import BookDescription from "@/components/book-detail/BookDescription";
-import ChapterListPreview from "@/components/book-detail/ChapterListPreview";
+import BookHeaderCard from "@/components/card/book/BookHeaderCard";
+import BookDescription from "@/components/shared/book/BookDescription";
+import ChapterListPreview from "@/components/shared/chapter/ChapterListPreview";
 import useReadingProgressManager from "@/hooks/useReadingProgressManager";
 import useGoToReader from "@/hooks/goToReader";
 import React, { useEffect, useState } from "react";
