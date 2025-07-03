@@ -32,7 +32,7 @@ interface ChapterData {
   content: string;
 }
 
-const IMAGE_BASE_URL = "http://192.168.1.219:3000/";
+const IMAGE_BASE_URL = "http://172.20.10.3:3000/";
 
 const FONT_OPTIONS = [
   {
@@ -59,7 +59,6 @@ export default function ReaderScreen() {
   const { bookId, chapter } = useLocalSearchParams();
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
-  // Sử dụng Context thay vì local state
 
   const {
     settings,
@@ -76,7 +75,6 @@ export default function ReaderScreen() {
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
 
-  // Get current font family
   const getCurrentFontFamily = () => {
     return (
       FONT_OPTIONS.find((font) => font.key === settings.font)?.fontFamily ||
@@ -84,7 +82,6 @@ export default function ReaderScreen() {
     );
   };
 
-  // Theme styles
   const getThemeStyles = () => {
     if (settings.theme === "dark") {
       return {
@@ -110,7 +107,6 @@ export default function ReaderScreen() {
 
   const themeStyles = getThemeStyles();
 
-  // Fetch nội dung chương
   useEffect(() => {
     if (!bookId) return;
 
@@ -148,7 +144,6 @@ export default function ReaderScreen() {
     fetchChapterTotal();
   }, [bookId, chapterNumber]);
 
-  // Lưu tiến trình
   useEffect(() => {
     if (!chapterData?._id) return;
 
@@ -180,7 +175,6 @@ export default function ReaderScreen() {
     });
   };
 
-  // Show loading while settings are being loaded
   if (loading || !chapterData || settingsLoading) {
     return (
       <View
@@ -199,7 +193,6 @@ export default function ReaderScreen() {
 
   return (
     <View className={`flex-1 ${themeStyles.container}`}>
-      {/* Header với nút settings */}
       <SafeAreaView>
         <View className="flex-row justify-between items-center px-4 py-2 mt-10">
           <TouchableOpacity
@@ -217,9 +210,8 @@ export default function ReaderScreen() {
         </View>
       </SafeAreaView>
 
-      {/* Nội dung chương */}
       <ScrollView
-        className="flex-1 px-4 py-6"
+        className="flex-1 px-4 pt-6 pb-40"
         contentInsetAdjustmentBehavior="automatic"
       >
         <RenderHTML
@@ -241,7 +233,7 @@ export default function ReaderScreen() {
         />
       </ScrollView>
       <View
-        className={`absolute bottom-0 left-0 right-0 border-t px-6 py-2 ${themeStyles.border} ${themeStyles.container}`}
+        className={`absolute bottom-0 left-0 right-0 border-t px-6 pt-2 pb-16 ${themeStyles.border} ${themeStyles.container}`}
       >
         <Pagination
           currentPage={chapterNumber}
@@ -255,7 +247,6 @@ export default function ReaderScreen() {
         />
       </View>
 
-      {/* Settings Modal */}
       <Modal
         visible={showSettings}
         animationType="slide"
@@ -271,7 +262,6 @@ export default function ReaderScreen() {
   }}"
         >
           <View className={`${themeStyles.modal} rounded-t-3xl p-6 max-h-96`}>
-            {/* Modal Header */}
             <View className="flex-row justify-between items-center mb-6">
               <Text className={`text-xl font-mbold ${themeStyles.text}`}>
                 Setting
@@ -286,7 +276,6 @@ export default function ReaderScreen() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Theme Selection */}
               <View className="mb-6">
                 <Text
                   className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}
@@ -344,7 +333,6 @@ export default function ReaderScreen() {
                 </View>
               </View>
 
-              {/* Font Size */}
               <View className="mb-6">
                 <Text
                   className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}
@@ -388,7 +376,6 @@ export default function ReaderScreen() {
                 </View>
               </View>
 
-              {/* Font Selection */}
               <View>
                 <Text
                   className={`text-lg font-msemibold mb-3 ${themeStyles.text}`}

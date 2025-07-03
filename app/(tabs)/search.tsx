@@ -81,7 +81,7 @@ const Search = () => {
 
   return (
     <ScrollView
-      className="flex-1 px-5 pt-5 bg-[#f6f2e9]"
+      className="flex-1 px-5 pt-16 bg-[#f6f2e9]"
       showsVerticalScrollIndicator={false}
       style={{
         backgroundColor:

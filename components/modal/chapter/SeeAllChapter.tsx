@@ -5,7 +5,7 @@ import Pagination from "@/components/ui/Pagination";
 import useGoToReader from "@/hooks/goToReader";
 import { colors } from "@/styles/colors";
 import { useTheme } from "@/contexts/ThemeContext";
-import Button from "../ui/button";
+import Button from "../../ui/button";
 
 const PAGE_SIZE = 22;
 

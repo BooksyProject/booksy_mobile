@@ -1,7 +1,7 @@
 import { ScrollView, Text, View } from "react-native";
-import BookHeaderCard from "@/components/book-detail/BookHeaderCard";
-import BookDescription from "@/components/book-detail/BookDescription";
-import ChapterListPreview from "@/components/book-detail/ChapterListPreview";
+import BookHeaderCard from "@/components/card/book/BookHeaderCard";
+import BookDescription from "@/components/shared/book/BookDescription";
+import ChapterListPreview from "@/components/shared/chapter/ChapterListPreview";
 import useReadingProgressManager from "@/hooks/useReadingProgressManager";
 import useGoToReader from "@/hooks/goToReader";
 import React, { useEffect, useState } from "react";
@@ -57,13 +57,13 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
     fetchData();
   }, [bookId]);
 
-  if (isLoading) {
-    return (
-      <ScrollView className="flex-1 bg-book-background">
-        <Text className="text-center mt-10 text-white">Loading...</Text>
-      </ScrollView>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <ScrollView className="flex-1 bg-book-background">
+  //       <Text className="text-center mt-10 text-white">Loading...</Text>
+  //     </ScrollView>
+  //   );
+  // }
 
   if (!bookDetail) {
     return (
@@ -74,7 +74,7 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
   }
 
   return (
-    <ScrollView className="flex-1 " style={{ backgroundColor: bgColor }}>
+    <ScrollView className="flex-1 h-full" style={{ backgroundColor: bgColor }}>
       <BookHeaderCard
         _id={bookDetail._id}
         title={bookDetail.title}
@@ -91,16 +91,22 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
       <BookDescription description={bookDetail.description} />
 
       <ChapterListPreview bookId={bookDetail._id} chapters={chapters} />
-
-      {!loading && (
-        <View className="mt-6 mx-safe-or-3 mb-2">
+      {/* {!loading && (
+        <View className="mt-6 mx-safe-or-3 mb-14">
           <Button
             title={progress ? "Continue Reading" : "Start Reading"}
             onPress={() => goToReader(bookId, progress?.chapterNumber || 1)}
             outline={!!progress}
           />
         </View>
-      )}
+      )} */}
+      <View className="mt-6 mx-safe-or-3 mb-14">
+        <Button
+          title={progress ? "Continue Reading" : "Start Reading"}
+          onPress={() => goToReader(bookId, progress?.chapterNumber || 1)}
+          outline={!!progress}
+        />
+      </View>
     </ScrollView>
   );
 };

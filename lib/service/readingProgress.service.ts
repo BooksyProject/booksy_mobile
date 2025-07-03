@@ -1,4 +1,3 @@
-// lib/services/readingProgress.service.ts
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 interface SaveProgressParams {
@@ -7,33 +6,47 @@ interface SaveProgressParams {
   percentage?: number;
 }
 
-export async function getReadingProgress(bookId: string) {
+export async function getReadingProgress(bookId: string, userId: string) {
   try {
-    const res = await fetch(`${BASE_URL}/progress/${bookId}`);
+    const res = await fetch(`${BASE_URL}/progress/${bookId}?userId=${userId}`);
     if (!res.ok) {
-      return { success: false, message: "Failed to fetch progress" }; // Trả về thông báo lỗi mà không ném ra
+      const error = await res.json();
+      return {
+        success: false,
+        message: error.error || "Failed to fetch progress",
+      };
     }
-    return await res.json();
+    const data = await res.json();
+    return { success: true, data };
   } catch (error) {
-    // Không báo lỗi ra màn hình, chỉ log vào console nếu cần
-    console.error("Error fetching reading progress:", error);
+    console.error("❌ Error fetching reading progress:", error);
     return {
       success: false,
       message: "An error occurred while fetching progress",
-    }; // Trả về kết quả mặc định
+    };
   }
 }
 
 export async function saveReadingProgress(
   bookId: string,
-  data: SaveProgressParams
+  data: SaveProgressParams,
+  userId: string
 ) {
-  const res = await fetch(`${BASE_URL}/progress/${bookId}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  });
+  try {
+    const res = await fetch(`${BASE_URL}/progress/${bookId}?userId=${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
 
-  if (!res.ok) throw new Error("Failed to save progress");
-  return await res.json();
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || "Failed to save progress");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("❌ Error saving reading progress:", error);
+    throw error;
+  }
 }
