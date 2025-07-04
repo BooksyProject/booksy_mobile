@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 const BASE_URL = process.env.EXPO_PUBLIC_BASE_URL;
 
 interface SaveProgressParams {
@@ -8,6 +10,7 @@ interface SaveProgressParams {
 
 export async function getReadingProgress(bookId: string, userId: string) {
   try {
+    console.log(bookId, userId, "getReadingProgress bookId");
     const res = await fetch(`${BASE_URL}/progress/${bookId}?userId=${userId}`);
     if (!res.ok) {
       const error = await res.json();
@@ -50,3 +53,24 @@ export async function saveReadingProgress(
     throw error;
   }
 }
+
+export const saveOfflineProgress = async (
+  bookId: string,
+  chapterNumber: number,
+  percentage: number
+) => {
+  try {
+    const progressKey = `offlineProgress:${bookId}`;
+    await AsyncStorage.setItem(
+      progressKey,
+      JSON.stringify({
+        lastReadChapter: chapterNumber,
+        progressPercentage: percentage,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+    console.log("📌 Tiến trình đọc đã được lưu offline");
+  } catch (error) {
+    console.error("❌ Lỗi khi lưu tiến trình đọc:", error);
+  }
+};

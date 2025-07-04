@@ -348,7 +348,7 @@ const Home = () => {
           contentContainerStyle={{ paddingVertical: 8 }}
         >
           {continueReadingBooks.map((book) => (
-            <LibraryBookCard key={book._id} book={book} />
+            <LibraryBookCard key={book._id} book={book} isOffline={false} />
           ))}
         </ScrollView>
       ) : (

@@ -73,6 +73,8 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
     );
   }
 
+  console.log(bookDetail, "bookDetail");
+
   return (
     <ScrollView className="flex-1 h-full" style={{ backgroundColor: bgColor }}>
       <BookHeaderCard
@@ -82,9 +84,10 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({ book, onClose }) => {
         coverImage={bookDetail.coverImage}
         categories={bookDetail.categories}
         likes={bookDetail.likes}
-        chapters={chapters.length}
+        chapters={chapters}
         views={bookDetail.views}
         fileURL={bookDetail.fileURL}
+        description={bookDetail.description}
         onClose={onClose}
       />
 
