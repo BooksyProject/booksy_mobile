@@ -5,7 +5,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import CategoryTab from "@/components/ui/category-tab";
-import { getLikedBooks } from "@/lib/service/book.service";
+import { getLikedBooks, useOfflineBooks } from "@/lib/service/book.service";
 import { getAllCategories } from "@/lib/service/category.service";
 import { getReadingProgress } from "@/lib/service/readingProgress.service";
 import LibraryBookCard from "@/components/card/book/LibraryBookCard";
@@ -20,6 +20,7 @@ type BookWithProgress = BookResponseDTO & {
     percentage: number;
     lastReadAt?: Date;
   } | null;
+  filePath?: string;
 };
 
 const Library = () => {
@@ -29,7 +30,8 @@ const Library = () => {
   const [booksData, setBooksData] = useState<BookWithProgress[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
-
+  const offlineBooks = useOfflineBooks();
+  const allBooks = [...booksData, ...offlineBooks];
   const getPercentage = (chapterNumber: number, totalChapters: number) => {
     if (totalChapters === 0) return 0;
     return Math.min((chapterNumber / totalChapters) * 100, 100);
@@ -131,15 +133,18 @@ const Library = () => {
         </ScrollView>
 
         <View style={styles.gridContainer}>
-          {booksData
+          {allBooks
             .filter((book) =>
               selectedCategory === "All"
                 ? true
                 : book.categories.includes(selectedCategory)
             )
             .map((book) => (
-              <View style={styles.gridItem} key={book._id}>
-                <LibraryBookCard book={book} />
+              <View style={styles.gridItem} key={book._id + Date()}>
+                <LibraryBookCard
+                  book={book}
+                  isOffline={book._id.includes("offline") ? true : false}
+                />
               </View>
             ))}
         </View>

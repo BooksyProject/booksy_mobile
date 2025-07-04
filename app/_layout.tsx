@@ -48,6 +48,10 @@ const RootLayout = () => {
               name="reader/[bookId]"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="offline-reader/[offline-reader]"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </ReaderSettingsProvider>
       </ThemeProvider>

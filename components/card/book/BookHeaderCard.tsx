@@ -11,11 +11,12 @@ import GenreBadge from "../../ui/genre-badge";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useState, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
+import { likeBook, unlikeBook } from "@/lib/service/book.service";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import { ArrowIcon, DownloadIcon, LikeIcon, ShareIcon } from "../../icon/Icons";
 import CircleIconButton from "../../ui/circle-icon-button";
+import DownloadButton from "@/components/ui/download-button";
 interface StatItemProps {
   label: string;
   value: number;
@@ -27,10 +28,11 @@ interface Props {
   author: string;
   coverImage: string;
   likes: number;
-  chapters: number;
+  chapters: any;
   views: number;
   categories: CategoryResponseDTO[];
   fileURL: string;
+  description: string;
   onClose: () => void;
 }
 
@@ -44,6 +46,7 @@ export default function BookHeaderCard({
   views,
   categories,
   fileURL,
+  description,
   onClose,
 }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
@@ -111,26 +114,6 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
     } catch (error) {
       console.error("Share error:", error);
       Alert.alert("Lỗi", "Không thể chia sẻ sách");
-    }
-  };
-
-  const handleBellPress = async () => {
-    try {
-      const newNotificationStatus = !isNotificationEnabled;
-      await AsyncStorage.setItem(
-        `notification_${title}`,
-        newNotificationStatus.toString()
-      );
-      setIsNotificationEnabled(newNotificationStatus);
-
-      Alert.alert(
-        newNotificationStatus ? "Đã bật thông báo" : "Đã tắt thông báo",
-        newNotificationStatus
-          ? "Bạn sẽ nhận được thông báo khi có chương mới!"
-          : "Đã tắt thông báo cho cuốn sách này"
-      );
-    } catch (error) {
-      console.error("Error toggling notification:", error);
     }
   };
 
@@ -237,10 +220,20 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
             >
               <LikeIcon size={27} color={bgColor} filled={isBookmarked} />
             </TouchableOpacity>
-            {/* <CircleIconButton
-              icon={DownloadIcon}
-              onPress={() => downloadBook(_id)}
-            /> */}
+            <DownloadButton
+              bookData={{
+                _id,
+                title,
+                author,
+                coverImage,
+                likes,
+                chapters,
+                views,
+                categories,
+                fileUrl: fileURL,
+                description,
+              }}
+            />
           </View>
         </View>
 
@@ -251,7 +244,11 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
             style={{ backgroundColor: textColor }}
           >
             <StatItem label="Likes" value={likes} textColor={bgColor} />
-            <StatItem label="Chapters" value={chapters} textColor={bgColor} />
+            <StatItem
+              label="Chapters"
+              value={chapters.length}
+              textColor={bgColor}
+            />
             <StatItem label="Views" value={views} textColor={bgColor} />
           </View>
         </View>
