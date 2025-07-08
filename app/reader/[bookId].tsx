@@ -1,5 +1,5 @@
 // ReaderScreen.tsx - Phiên bản sử dụng Context
-import { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,10 @@ import {
   TouchableOpacity,
   Modal,
   SafeAreaView,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  FlatList,
+  TextInput,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import RenderHTML from "react-native-render-html";
@@ -21,9 +25,23 @@ import {
 import Pagination from "@/components/ui/Pagination";
 import { useReaderSettings } from "@/contexts/ReaderSettingContext";
 import { WebView } from "react-native-webview";
-import { ArrowIcon, SettingsIcon } from "@/components/icon/Icons";
+import {
+  AddIcon,
+  ArrowIcon,
+  PlusIcon,
+  SettingsIcon,
+  TrashIcon,
+} from "@/components/icon/Icons";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
+import {
+  addBookmark,
+  getBookmarks,
+  removeBookmark,
+} from "@/lib/service/book.service";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { BookmarkDTO } from "@/dtos/BookDTO";
+import { BookmarkIcon, EyeClosed } from "lucide-react-native";
 
 interface ChapterData {
   _id: string;
@@ -52,13 +70,18 @@ const FONT_OPTIONS = [
     fontFamily: "RobotoMono-VariableFont_wght",
   },
 ];
-
 export default function ReaderScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
-  const { bookId, chapter } = useLocalSearchParams();
+  const { bookId, chapter, position } = useLocalSearchParams(); // Thêm position param
   const chapterNumber = Number(chapter || 1);
+  const bookmarkPosition = Number(position || 0); // Lấy vị trí từ params
   const [chapterTotal, setChapterTotal] = useState<number>(0);
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [showBookmarkModal, setShowBookmarkModal] = useState(false);
+  const [bookmarkNote, setBookmarkNote] = useState("");
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
+  const [showBookmarksList, setShowBookmarksList] = useState(false);
 
   const {
     settings,
@@ -69,12 +92,21 @@ export default function ReaderScreen() {
   } = useReaderSettings();
   const isReaderDark = settings.theme === "dark";
   const textColor = isReaderDark ? "#F1EEE3" : "#26212A";
-
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
   const { save, updateProgress } = useReadingProgressManager(bookId as string);
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-
+  const scrollViewRef = useRef<ScrollView>(null);
+  const [contentHeight, setContentHeight] = useState(1);
+  const [layoutHeight, setLayoutHeight] = useState(1);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [selectedText, setSelectedText] = useState({
+    index: null, // index của paragraph
+    text: "", // nội dung được chọn
+    start: 0, // vị trí bắt đầu trong paragraph
+    end: 0, // vị trí kết thúc trong paragraph
+  });
   const getCurrentFontFamily = () => {
     return (
       FONT_OPTIONS.find((font) => font.key === settings.font)?.fontFamily ||
@@ -140,9 +172,61 @@ export default function ReaderScreen() {
       }
     };
 
+    const fetchBookmarks = async () => {
+      try {
+        const userId = await AsyncStorage.getItem("userId");
+        if (!userId) return;
+        const bookmarks = await getBookmarks(String(bookId), userId);
+        setBookmarks(bookmarks);
+      } catch (err) {
+        console.error("❌ Failed to fetch bookmarks:", err);
+      }
+    };
+
     fetchChapter();
     fetchChapterTotal();
+    fetchBookmarks();
   }, [bookId, chapterNumber]);
+
+  // Effect để scroll đến vị trí bookmark khi có position từ params - fix
+  useEffect(() => {
+    if (bookmarkPosition > 0 && chapterData && !loading) {
+      console.log("🎯 Auto-scroll effect triggered:", bookmarkPosition);
+
+      // Chờ một chút để content render xong
+      setTimeout(() => {
+        if (scrollViewRef.current) {
+          // Cách 1: Sử dụng giá trị ước tính
+          const estimatedContentHeight = 3000; // Ước tính content cao 3000px
+          const scrollY = bookmarkPosition * estimatedContentHeight;
+
+          console.log("🎯 Auto-scroll estimated:", {
+            position: bookmarkPosition,
+            estimatedHeight: estimatedContentHeight,
+            scrollY,
+          });
+
+          scrollViewRef.current.scrollTo({
+            y: scrollY,
+            animated: true,
+          });
+        }
+      }, 1000);
+
+      // Thử lại sau 2 giây với giá trị khác
+      setTimeout(() => {
+        if (scrollViewRef.current) {
+          const alternativeScrollY = bookmarkPosition * 2500;
+          console.log("🔄 Auto-scroll retry:", alternativeScrollY);
+
+          scrollViewRef.current.scrollTo({
+            y: alternativeScrollY,
+            animated: true,
+          });
+        }
+      }, 2000);
+    }
+  }, [bookmarkPosition, chapterData, loading]);
 
   useEffect(() => {
     if (!chapterData?._id) return;
@@ -175,6 +259,113 @@ export default function ReaderScreen() {
     });
   };
 
+  // Hàm xử lý thêm bookmark
+  const handleAddBookmark = async () => {
+    try {
+      if (!chapterData?._id || !bookId || selectedIndex === null) return;
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+
+      await addBookmark(
+        String(bookId),
+        chapterData._id,
+        scrollPosition,
+        userId,
+        bookmarkNote,
+        selectedIndex
+      );
+
+      const updated = await getBookmarks(String(bookId), userId);
+
+      console.log(updated, "add ok");
+      setBookmarks(updated);
+      setBookmarkNote("");
+      setShowBookmarkModal(false);
+      setSelectedIndex(null);
+    } catch (err) {
+      console.error("❌ Failed to add bookmark:", err);
+    }
+  };
+
+  // Hàm xử lý xóa bookmark
+  const handleRemoveBookmark = async (bookmark: any) => {
+    try {
+      const userId = await AsyncStorage.getItem("userId");
+      if (!userId) return;
+      await removeBookmark(
+        bookmark.chapterId.bookId,
+        bookmark.chapterId._id,
+        bookmark.position,
+        userId
+      );
+
+      const updatedBookmarks = await getBookmarks(String(bookId), userId);
+      setBookmarks(updatedBookmarks);
+    } catch (err) {
+      console.error("❌ Failed to remove bookmark:", err);
+    }
+  };
+
+  // Hàm xử lý khi scroll thay đổi - FIX: Tính toán chính xác hơn
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const scrollY = contentOffset.y;
+    const totalScrollableHeight = contentSize.height - layoutMeasurement.height;
+
+    // Cập nhật content height và layout height
+    setContentHeight(contentSize.height);
+    setLayoutHeight(layoutMeasurement.height);
+
+    // Tính toán vị trí scroll (0-1)
+    const position =
+      totalScrollableHeight > 0 ? scrollY / totalScrollableHeight : 0;
+    setScrollPosition(Math.max(0, Math.min(1, position))); // Đảm bảo trong khoảng 0-1
+
+    // Cập nhật tiến độ đọc
+    if (chapterData?._id) {
+      updateProgress(
+        chapterData._id,
+        chapterData.chapterNumber,
+        position * 100
+      );
+    }
+  };
+
+  // Hàm điều hướng đến bookmark - fix cho trường hợp contentHeight = 0
+  const navigateToBookmark = (bookmark: any) => {
+    setShowBookmarksList(false);
+
+    if (chapterData && chapterData._id === bookmark.chapterId._id) {
+      // Scroll đến vị trí trong chương hiện tại
+      console.log("📍 Scrolling to:", bookmark.position);
+
+      const scrollY =
+        contentHeight > layoutHeight
+          ? bookmark.position * (contentHeight - layoutHeight)
+          : 0;
+
+      scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
+    } else {
+      // Điều hướng đến chương khác và truyền position
+      router.replace({
+        pathname: "/reader/[bookId]",
+        params: {
+          bookId: String(bookmark.chapterId.bookId),
+          chapter: String(bookmark.chapterId.chapterNumber),
+          position: String(bookmark.position),
+        },
+      });
+    }
+  };
+
+  const paragraphs = useMemo(() => {
+    if (!chapterData?.content) return [];
+    return chapterData.content
+      .split(/<\/p>\s*/gi)
+      .map((p) => p.trim() + "</p>")
+      .filter((p) => p !== "</p>");
+  }, [chapterData]);
+
   if (loading || !chapterData || settingsLoading) {
     return (
       <View
@@ -201,37 +392,162 @@ export default function ReaderScreen() {
           >
             <ArrowIcon color={textColor} size={27} />
           </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowSettings(true)}
-            className={`p-2 rounded-lg`}
-          >
-            <SettingsIcon color={textColor} size={27} />
-          </TouchableOpacity>
+
+          <View className="flex-row">
+            <TouchableOpacity
+              onPress={() => setShowBookmarksList(true)}
+              className="p-2 mr-2 rounded-lg"
+            >
+              <BookmarkIcon color={textColor} size={27} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setShowSettings(true)}
+              className="p-2 rounded-lg"
+            >
+              <SettingsIcon color={textColor} size={27} />
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
 
       <ScrollView
         className="flex-1 px-4 pt-6 pb-40"
+        ref={scrollViewRef}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentInsetAdjustmentBehavior="automatic"
+        onLayout={(e) => setLayoutHeight(e.nativeEvent.layout.height)}
+        onContentSizeChange={(contentWidth, contentHeight) => {
+          setContentHeight(contentHeight);
+        }}
       >
-        <RenderHTML
-          contentWidth={width}
-          source={{ html: chapterData.content }}
-          baseStyle={{
-            fontSize: settings.fontSize,
-            lineHeight: settings.fontSize * 1.75,
-            color: themeStyles.content,
-            fontFamily: getCurrentFontFamily(),
-          }}
-          enableExperimentalMarginCollapsing={true}
-          defaultTextProps={{
-            style: {
-              fontFamily: getCurrentFontFamily(), // Ép font vào mọi Text bên trong
-            },
-            selectable: true,
-          }}
-        />
+        {paragraphs.map((html, index) => {
+          const isBookmarked = bookmarks.some((b) => b.index === index);
+
+          return (
+            <TouchableOpacity
+              key={index}
+              onLongPress={() => {
+                setSelectedIndex(index);
+                setShowBookmarkModal(true);
+              }}
+              activeOpacity={0.9}
+              style={{
+                backgroundColor: isBookmarked ? "#e1cf2c" : "transparent",
+                paddingVertical: 4,
+                marginBottom: 6,
+                borderRadius: 4,
+              }}
+            >
+              <RenderHTML
+                contentWidth={width}
+                source={{ html }}
+                baseStyle={{
+                  fontSize: settings.fontSize,
+                  lineHeight: settings.fontSize * 1.75,
+                  color: themeStyles.content,
+                  fontFamily: getCurrentFontFamily(),
+                }}
+                defaultTextProps={{
+                  selectable: true,
+                  // selectable: false, // bỏ hoàn toàn nếu cần block context menu
+                }}
+              />
+            </TouchableOpacity>
+          );
+        })}
       </ScrollView>
+
+      {/* Nút thêm bookmark */}
+      <TouchableOpacity
+        onPress={() => setShowBookmarkModal(true)}
+        className={`absolute right-4 bottom-36 p-3 rounded-full ${themeStyles.button}`}
+      >
+        <PlusIcon />
+      </TouchableOpacity>
+
+      {/* Modal thêm bookmark */}
+      <Modal
+        visible={showBookmarkModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowBookmarkModal(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black/50">
+          <View className={`w-4/5 p-4 rounded-lg ${themeStyles.modal}`}>
+            <Text className={`text-lg font-bold mb-4 ${themeStyles.text}`}>
+              Thêm Bookmark tại {Math.round(scrollPosition * 100)}%
+            </Text>
+            <TextInput
+              placeholder="Ghi chú (tuỳ chọn)"
+              value={bookmarkNote}
+              onChangeText={setBookmarkNote}
+              className={`p-2 border rounded mb-4 ${themeStyles.border} ${themeStyles.text}`}
+              placeholderTextColor={themeStyles.content + "80"}
+            />
+            <View className="flex-row justify-end">
+              <TouchableOpacity
+                onPress={() => setShowBookmarkModal(false)}
+                className="px-4 py-2 mr-2"
+              >
+                <Text className={`${themeStyles.text}`}>Huỷ</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={handleAddBookmark}
+                className={`px-4 py-2 rounded ${themeStyles.button}`}
+              >
+                <Text className={`${themeStyles.buttonText}`}>Lưu</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Panel danh sách bookmark */}
+      {showBookmarksList && (
+        <View
+          className={`absolute top-0 bottom-0 right-0 w-3/4 ${themeStyles.modal}`}
+        >
+          <View className="flex-row justify-between items-center p-4 border-b">
+            <Text className={`text-lg font-bold ${themeStyles.text}`}>
+              Bookmarks
+            </Text>
+            <TouchableOpacity onPress={() => setShowBookmarksList(false)}>
+              <EyeClosed color={textColor} size={24} />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={bookmarks}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                className="p-3 border-b"
+                onPress={() => navigateToBookmark(item)}
+              >
+                <Text className={`font-bold ${themeStyles.text}`}>
+                  Chương {item.chapterId.chapterNumber}:{" "}
+                  {Math.round(item.position * 100)}%
+                </Text>
+                {item.note && (
+                  <Text className={`mt-1 ${themeStyles.text}`}>
+                    {item.note}
+                  </Text>
+                )}
+                <TouchableOpacity
+                  onPress={() => handleRemoveBookmark(item)}
+                  className="absolute right-2 top-2"
+                >
+                  <TrashIcon color={textColor} size={18} />
+                </TouchableOpacity>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
+
+      {/* Giữ nguyên phần Pagination và Settings Modal */}
       <View
         className={`absolute bottom-0 left-0 right-0 border-t px-6 pt-2 pb-16 ${themeStyles.border} ${themeStyles.container}`}
       >

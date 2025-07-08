@@ -62,3 +62,13 @@ export interface OfflineChapter {
   content: string;
   bookId: string;
 }
+
+export interface BookmarkDTO {
+  _id: string;
+  bookId: string;
+  chapterId: string;
+  chapterNumber: number;
+  position: number;
+  note?: string;
+  createdAt: string;
+}
