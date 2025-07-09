@@ -21,7 +21,12 @@ import {
 import Pagination from "@/components/ui/Pagination";
 import { useReaderSettings } from "@/contexts/ReaderSettingContext";
 import { WebView } from "react-native-webview";
-import { ArrowIcon, SendIcon, SettingsIcon } from "@/components/icon/Icons";
+import {
+  ArrowIcon,
+  CommentIcon,
+  SendIcon,
+  SettingsIcon,
+} from "@/components/icon/Icons";
 import { MessageCircle } from "lucide-react-native";
 import {
   createComment,
@@ -71,12 +76,29 @@ export default function ReaderScreen() {
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
   const { profile } = useAuth();
-  const profileBasic: UserBasicInfo = {
-    _id: profile?._id,
-    avatar: profile?.avatar,
-    firstName: profile?.firstName,
-    lastName: profile?.lastName,
-  };
+  const [profileBasic, setProfileBasic] = useState<UserBasicInfo | null>(null);
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profileString = await AsyncStorage.getItem("profile");
+        if (profileString) {
+          const profile = JSON.parse(profileString);
+
+          setProfileBasic({
+            _id: profile._id || "",
+            avatar: profile.avatar || "",
+            firstName: profile.firstName || "Anonymous",
+            lastName: profile.lastName || "Anonymous",
+          });
+        }
+      } catch (error) {
+        console.error("❌ Failed to load profile from AsyncStorage:", error);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
   const [numberOfComments, setNumberOfComments] = useState(0);
   const { colorScheme, toggleColorScheme } = useTheme();
   const {
@@ -133,28 +155,18 @@ export default function ReaderScreen() {
       const enrichedComment: CommentResponseDTO = {
         ...newCommentData,
         author: {
-          _id: profileBasic?._id,
-          avatar: profileBasic?.avatar || "/assets/images/default-avatar.jpg",
+          _id: profileBasic?._id || "",
+          avatar:
+            profileBasic?.avatar ||
+            "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
           firstName: profileBasic?.firstName || "Anonymous",
           lastName: profileBasic?.lastName || "Anonymous",
         },
         createAt: currentTime,
         likes: [],
       };
-      // post.comments = [newCommentData._id, ...post.comments];
-
       setBookComments((prev: any) => [enrichedComment, ...prev]);
 
-      // if (post?.author._id !== profileBasic._id) {
-      //   const notificationParams = {
-      //     senderId: profileBasic._id,
-      //     receiverId: post?.author._id,
-      //     type: "comment",
-      //     postId: post?._id,
-      //   };
-
-      //   await createNotification(notificationParams, token);
-      // }
       setNumberOfComments(numberOfComments + 1);
       setComment("");
     } catch (error) {
@@ -301,9 +313,9 @@ export default function ReaderScreen() {
       </SafeAreaView>
       <TouchableOpacity
         onPress={handleOpenComments}
-        className="absolute bottom-28 right-4 z-50 bg-white dark:bg-black p-3 rounded-full shadow"
+        className="absolute bottom-36 right-4 z-50 bg-white dark:bg-black p-3 rounded-full shadow"
       >
-        <ArrowIcon color={textColor} size={27} />
+        <CommentIcon color={textColor} size={27} />
       </TouchableOpacity>
       <ScrollView
         className="flex-1 px-4 pt-6 pb-40"
@@ -365,20 +377,27 @@ export default function ReaderScreen() {
             {bookComments.length === 0 ? (
               <Text className="text-center text-gray-500">No comment yet.</Text>
             ) : (
-              bookComments.map((comment) => (
-                <View key={comment._id}>
-                  <CommentCard
-                    comment={comment}
-                    commentsData={bookComments}
-                    setCommentsData={setBookComments}
-                    author={comment.author}
-                    chapterId={chapterData._id}
-                    profileBasic={profileBasic}
-                    setNumberOfComments={setNumberOfComments}
-                    numberOfComments={numberOfComments}
-                  />
-                </View>
-              ))
+              bookComments.map(
+                (comment) =>
+                  comment.parentId === null && (
+                    <View key={comment._id}>
+                      {profileBasic && (
+                        <CommentCard
+                          comment={comment}
+                          commentsData={bookComments}
+                          setCommentsData={setBookComments}
+                          author={comment.author}
+                          chapterId={chapterData._id}
+                          profileBasic={profileBasic}
+                          setNumberOfComments={setNumberOfComments}
+                          numberOfComments={numberOfComments}
+                          textColor={textColor}
+                          bgColor={bgColor}
+                        />
+                      )}
+                    </View>
+                  )
+              )
             )}
           </ScrollView>
           <View

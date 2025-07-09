@@ -8,13 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { colors } from "@/styles/colors";
 import ReplyCard from "./ReplyCard";
 import { UserBasicInfo } from "@/dtos/UserDTO";
 import CommentActionCard from "./CommentActionCard";
 import { CommentResponseDTO } from "@/dtos/CommentDTO";
 import { useTheme } from "@/contexts/ThemeContext";
 import { getCommentByCommentId } from "@/lib/service/comment.service";
+import CommentMenu from "@/components/modal/comment/CommentMenu";
 
 interface CommentCardProps {
   comment: CommentResponseDTO;
@@ -25,6 +25,8 @@ interface CommentCardProps {
   chapterId?: string;
   setNumberOfComments: React.Dispatch<React.SetStateAction<number>>;
   numberOfComments: number;
+  textColor: string;
+  bgColor: string;
 }
 const CommentCard = ({
   comment,
@@ -35,6 +37,8 @@ const CommentCard = ({
   chapterId,
   setNumberOfComments,
   numberOfComments,
+  textColor,
+  bgColor,
 }: CommentCardProps) => {
   const { colorScheme } = useTheme();
   const [isModalVisible, setModalVisible] = useState(false);
@@ -78,34 +82,37 @@ const CommentCard = ({
             source={{
               uri:
                 comment.author?.avatar ||
-                "https://i.pinimg.com/236x/88/bd/6b/88bd6bd828ec509f4bda0d9f9450824d.jpg",
+                "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
             }}
             className="w-11 h-11 rounded-full"
           />
           <View className="ml-3">
             <Text
               style={{
-                color:
-                  colorScheme === "dark" ? colors.dark[100] : colors.light[100],
+                color: textColor,
               }}
               className="font-mmedium text-[16px]"
             >
               {comment.author?.firstName} {comment.author?.lastName}
             </Text>
             <View
-              className=" rounded-r-[20px] rounded-bl-[20px] px-[15px] py-[10px]  self-start"
               style={{
-                backgroundColor:
-                  colorScheme === "dark" ? colors.dark[400] : colors.light[400],
+                paddingHorizontal: 15,
+                paddingVertical: 10,
+                alignSelf: "flex-start",
+                backgroundColor: bgColor,
+                borderColor: "#CCCCCC",
+                borderWidth: 1,
+                borderTopRightRadius: 20,
+                borderBottomRightRadius: 20,
+                borderBottomLeftRadius: 20,
+                overflow: "hidden", // 👈 Thêm dòng này để Android render đúng border radius
               }}
             >
               <Text
                 className="text-[16px] font-mregular inline-block"
                 style={{
-                  color:
-                    colorScheme === "dark"
-                      ? colors.dark[100]
-                      : colors.light[100],
+                  color: textColor,
                 }}
               >
                 {comment.content}
@@ -121,6 +128,8 @@ const CommentCard = ({
               author={author}
               originalCommentId={comment._id}
               setRepliesData={setRepliesData}
+              textColor={textColor} // 👈 thêm dòng này
+              bgColor={bgColor}
             />
             {comment.replies && comment.replies?.length > 0 && (
               <TouchableOpacity onPress={toggleShowReplies}>
@@ -148,12 +157,14 @@ const CommentCard = ({
                   setNumberOfComments={setNumberOfComments}
                   numberOfComments={numberOfComments}
                   setCommentsData={setCommentsData}
+                  textColor={textColor}
+                  bgColor={bgColor}
                 />
               </View>
             ))}
           </View>
         )}
-        {/* <Modal
+        <Modal
           transparent={true}
           visible={isModalVisible}
           animationType="fade"
@@ -161,16 +172,17 @@ const CommentCard = ({
         >
           <CommentMenu
             comment={comment}
-            // commentsData={commentsData}
             setCommentsData={setCommentsData}
             setModalVisible={setModalVisible}
-            postId={postId}
-            mediaId={mediaId}
+            chapterId={chapterId}
             setNumberOfComments={setNumberOfComments}
             numberOfComments={numberOfComments}
             repliesCount={repliesData?.length}
+            profileBasic={profileBasic}
+            textColor={textColor}
+            bgColor={bgColor}
           />
-        </Modal> */}
+        </Modal>
       </TouchableOpacity>
     </KeyboardAvoidingView>
   );

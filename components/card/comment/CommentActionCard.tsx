@@ -25,6 +25,8 @@ interface CommentActionCardProps {
   originalCommentId: string;
   setRepliesData: React.Dispatch<React.SetStateAction<CommentResponseDTO[]>>;
   setCommentsData?: React.Dispatch<React.SetStateAction<CommentResponseDTO[]>>;
+  textColor: string;
+  bgColor: string;
 }
 
 const CommentActionCard = ({
@@ -37,6 +39,8 @@ const CommentActionCard = ({
   originalCommentId,
   setRepliesData,
   setCommentsData,
+  textColor,
+  bgColor,
 }: CommentActionCardProps) => {
   const { colorScheme } = useTheme();
   const [isLiked, setIsLiked] = useState(false);
@@ -157,7 +161,9 @@ const CommentActionCard = ({
           ...newCommentData,
           author: {
             _id: profileBasic?._id,
-            avatar: profileBasic?.avatar || "/assets/images/default-avatar.jpg",
+            avatar:
+              profileBasic?.avatar ||
+              "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
             firstName: profileBasic?.firstName || "Anonymous",
             lastName: profileBasic?.lastName || "Anonymous",
           },
@@ -202,11 +208,10 @@ const CommentActionCard = ({
 
   return (
     <View>
-      <View className="flex-row space-x-2">
+      <View className="flex-row space-x-2" style={{ gap: 10 }}>
         <Text
           style={{
-            color:
-              colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+            color: textColor,
             fontSize: 12,
           }}
           className="font-mregular"
@@ -216,7 +221,7 @@ const CommentActionCard = ({
         <View className="flex-row space-x-1">
           <TouchableOpacity onPress={toggleLike}>
             <Text
-              className=" text-xs font-mmedium"
+              className=" text-sm font-mmedium"
               style={{
                 color: isLiked
                   ? colors.primary[100]
@@ -230,13 +235,9 @@ const CommentActionCard = ({
           </TouchableOpacity>
           <TouchableOpacity>
             <Text
-              className=" text-xs font-mmedium"
+              className=" text-sm font-mmedium"
               style={{
-                color: isLiked
-                  ? colors.primary[100]
-                  : colorScheme === "dark"
-                  ? colors.dark[100]
-                  : colors.light[100],
+                color: isLiked ? colors.primary[100] : textColor,
               }}
             >
               {numberOfLikes}
@@ -246,10 +247,9 @@ const CommentActionCard = ({
 
         <TouchableOpacity onPress={() => setReplyingTo(comment._id)}>
           <Text
-            className=" text-xs font-mmedium"
+            className=" text-sm font-mmedium"
             style={{
-              color:
-                colorScheme === "dark" ? colors.dark[100] : colors.light[100],
+              color: textColor,
             }}
           >
             Reply
@@ -261,7 +261,6 @@ const CommentActionCard = ({
           <View className="w-full flex-row items-center px-2">
             <View className="flex-1">
               <Input
-                // avatarSrc={profileBasic?.avatar || "/assets/images/capy.jpg"}
                 placeholder="Write a comment"
                 readOnly={false}
                 value={newComment}
