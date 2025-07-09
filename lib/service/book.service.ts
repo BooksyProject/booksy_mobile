@@ -724,3 +724,108 @@ export class OfflineBookService {
     }
   }
 }
+
+export async function addBookmark(
+  bookId: string,
+  chapterId: string,
+  position: number,
+  userId: string,
+  note?: string,
+  index?: number,
+  selectedText?: string, // Thêm nội dung được chọn
+  selectedTextStart?: number, // Thêm vị trí bắt đầu
+  selectedTextEnd?: number // Thêm vị trí kết thúc
+) {
+  const res = await fetch(
+    `${BASE_URL}/book/bookMark?userId=${userId}&&bookId=${bookId}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bookId,
+        chapterId,
+        position,
+        userId,
+        note,
+        index,
+        selectedText,
+        selectedTextStart,
+        selectedTextEnd,
+      }),
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to add bookmark");
+  return await res.json();
+}
+
+export async function removeBookmark(
+  bookId: string,
+  chapterId: string,
+  position: number,
+  userId: string
+) {
+  const res = await fetch(
+    `${BASE_URL}/book/bookMark?userId=${userId}&&bookId=${bookId}`,
+    {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bookId,
+        chapterId,
+        position,
+        userId,
+      }),
+    }
+  );
+
+  if (!res.ok) throw new Error("Failed to remove bookmark");
+  return await res.json();
+}
+
+export async function getBookmarks(bookId: string, userId: string) {
+  const res = await fetch(
+    `${BASE_URL}/book/bookMark?bookId=${bookId}&userId=${userId}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch bookmarks");
+  return await res.json();
+}
+
+export async function getReadingProgress(bookId: string, userId: string) {
+  const res = await fetch(
+    `${BASE_URL}/book/progress?bookId=${bookId}&userId=${userId}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch reading progress");
+  return await res.json();
+}
+
+export async function updateReadingPosition(
+  bookId: string,
+  chapterId: string,
+  position: number,
+  userId: string
+) {
+  const res = await fetch(`${BASE_URL}/api/progress/update`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      bookId,
+      chapterId,
+      position,
+      userId,
+    }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.message || "Failed to update reading position");
+  }
+
+  return await res.json();
+}

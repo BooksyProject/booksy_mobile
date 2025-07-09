@@ -89,7 +89,7 @@ const TabsLayout = () => {
         tabBarStyle: {
           backgroundColor:
             colorScheme === "dark" ? colors.dark[100] : colors.light[100],
-          height: 90,
+          height: 50,
           paddingBottom: 50,
           paddingTop: 10,
           borderTopWidth: 0,

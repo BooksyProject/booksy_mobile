@@ -16,6 +16,7 @@ import useGoToReader from "@/hooks/goToReader";
 import { OfflineBookService } from "@/lib/service/book.service";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useLibrary } from "@/contexts/LibaryContext";
 
 // interface LibraryBookCardProps {
 //   book: any & {
@@ -175,7 +176,7 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileSize, setFileSize] = useState<string>("");
-
+  const { removeBookFromLibrary } = useLibrary();
   // Kiểm tra xem có phải sách offline không
   const isOfflineBook =
     isOffline || !!book.filePath || OfflineBookService.isOfflineBook(book._id);
@@ -231,7 +232,8 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
   const handleDeleteBook = async () => {
     try {
       setIsDeleting(true);
-      await OfflineBookService.deleteOfflineBook(book._id);
+      // await OfflineBookService.deleteOfflineBook(book._id);
+      removeBookFromLibrary(book._id.replace("offline-", ""));
       setShowDeleteModal(false);
       onBookDeleted?.(book._id);
       Alert.alert("Thành công", "Đã xóa sách khỏi thiết bị!");
