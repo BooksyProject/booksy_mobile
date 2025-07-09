@@ -111,8 +111,8 @@ const FONT_OPTIONS = [
 ];
 
 const SCROLL_THROTTLE = 16;
-const AUTO_SCROLL_DELAY = 500; // Giảm delay
-const CHUNK_SIZE = 10; // Render theo chunks
+const AUTO_SCROLL_DELAY = 500;
+const CHUNK_SIZE = 10;
 
 export default function ReaderScreen() {
   const { width } = useWindowDimensions();
@@ -756,7 +756,7 @@ export default function ReaderScreen() {
       >
         <View className="flex-1">
           <Text className={`font-bold ${themeStyles.text}`}>
-            Trang {item.chapterId.chapterNumber}
+            Page {item.chapterId.chapterNumber}
           </Text>
 
           {item.note && (
