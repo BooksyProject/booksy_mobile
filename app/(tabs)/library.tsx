@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import { View, ScrollView, Platform, Alert, StyleSheet } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
@@ -12,6 +18,7 @@ import LibraryBookCard from "@/components/card/book/LibraryBookCard";
 import { BookResponseDTO } from "@/dtos/BookDTO";
 import { CategoryResponseDTO } from "@/dtos/CategoryDTO";
 import { useLibrary } from "@/contexts/LibaryContext"; // ✅ Thay thế hook cũ
+import { useReadingProgress } from "@/contexts/ReadingProgressContext";
 
 type BookWithProgress = BookResponseDTO & {
   totalChapters: number;
@@ -35,8 +42,9 @@ const Library = () => {
   const [selectedBookType, setSelectedBookType] =
     useState<BookTypeFilter>("online");
   const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
-
+  const lastFetchRef = useRef<number | null>(null);
   const { offlineBooks, refreshLibrary } = useLibrary();
+  const { readingProgress } = useReadingProgress();
 
   const getPercentage = (chapterNumber: number, totalChapters: number) => {
     if (totalChapters === 0) return 0;
@@ -101,8 +109,8 @@ const Library = () => {
   const loadAllData = useCallback(() => {
     fetchBookmarks();
     fetchCategories();
-    refreshLibrary(); // ✅ Làm mới thư viện offline
-  }, [fetchBookmarks, fetchCategories, refreshLibrary]);
+    refreshLibrary();
+  }, []);
 
   useFocusEffect(loadAllData);
 

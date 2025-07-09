@@ -74,3 +74,24 @@ export const saveOfflineProgress = async (
     console.error("❌ Lỗi khi lưu tiến trình đọc:", error);
   }
 };
+
+export const saveOnlineProgress = async (
+  bookId: string,
+  chapterNumber: number,
+  percentage: number
+) => {
+  try {
+    const progressKey = `${bookId}`;
+    await AsyncStorage.setItem(
+      progressKey,
+      JSON.stringify({
+        lastReadChapter: chapterNumber,
+        progressPercentage: percentage,
+        updatedAt: new Date().toISOString(),
+      })
+    );
+    console.log("📌 Tiến trình đọc đã được lưu online");
+  } catch (error) {
+    console.error("❌ Lỗi khi lưu tiến trình đọc:", error);
+  }
+};
