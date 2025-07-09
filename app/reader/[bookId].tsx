@@ -140,6 +140,7 @@ export default function ReaderScreen() {
   const [showBookmarksList, setShowBookmarksList] = useState(false);
   const [bookmarkNote, setBookmarkNote] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const paragraphRefs = useRef<Record<number, View>>(Object.create(null));
 
   // UI states
   const [showSettings, setShowSettings] = useState(false);
@@ -647,8 +648,9 @@ export default function ReaderScreen() {
   // Render functions
   const renderParagraph = useCallback(
     ({ html, index }: { html: string; index: number }) => {
-      const isBookmarked = bookmarks.some((b) => b.index === index);
-
+      const isBookmarked = bookmarks.some(
+        (b) => b.index === index && b.chapterId._id === chapterData?._id
+      );
       return (
         <TouchableOpacity
           key={index}
@@ -684,6 +686,38 @@ export default function ReaderScreen() {
       getCurrentFontFamily,
     ]
   );
+
+  const scrollToBookmark = () => {
+    const paragraphRef = paragraphRefs.current[bookmarkPosition];
+
+    if (paragraphRef && scrollViewRef.current) {
+      try {
+        paragraphRef.measureLayout(
+          scrollViewRef.current.getInnerViewNode(),
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y, animated: true });
+          },
+          () => {
+            console.warn("❌ measureLayout failed");
+          }
+        );
+      } catch (e) {
+        console.warn("❌ Failed to measure paragraph:", e);
+      }
+    } else {
+      console.warn("❌ Bookmark ref not available");
+    }
+  };
+
+  useEffect(() => {
+    if (contentReady && bookmarkPosition >= 0) {
+      InteractionManager.runAfterInteractions(() => {
+        setTimeout(() => {
+          scrollToBookmark();
+        }, 500); // Delay tùy độ nặng của nội dung
+      });
+    }
+  }, [contentReady, bookmarkPosition]);
 
   const renderBookmarkItem = useCallback(
     ({ item }: { item: BookmarkData }) => (
@@ -808,17 +842,20 @@ export default function ReaderScreen() {
         scrollEventThrottle={SCROLL_THROTTLE}
         contentInsetAdjustmentBehavior="automatic"
         onLayout={(e) => setLayoutHeight(e.nativeEvent.layout.height)}
-        onContentSizeChange={(contentWidth, contentHeight) =>
-          setContentHeight(contentHeight)
-        }
+        onContentSizeChange={(contentHeight) => setContentHeight(contentHeight)}
         removeClippedSubviews={true}
-        maxToRenderPerBatch={CHUNK_SIZE}
-        windowSize={20}
       >
         {/* Progressive rendering */}
-        {visibleParagraphs.map((html, index) =>
-          renderParagraph({ html, index })
-        )}
+        {visibleParagraphs.map((html, index) => (
+          <View
+            key={index}
+            ref={(ref) => {
+              if (ref) paragraphRefs.current[index] = ref;
+            }}
+          >
+            {renderParagraph({ html, index })}
+          </View>
+        ))}
 
         {/* Loading indicator for more content */}
         {renderChunks * CHUNK_SIZE < paragraphs.length && (

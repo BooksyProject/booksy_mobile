@@ -59,14 +59,13 @@ export const LibraryProvider = ({
   const addBookToLibrary = (book: OfflineBook) => {
     setOfflineBooks((prev) => {
       const exists = prev.find((b) => b._id === book._id);
-      if (exists) return prev; // không thêm nếu đã có
+      if (exists) return prev;
       return [book, ...prev];
     });
   };
 
   const removeBookFromLibrary = async (bookId: string) => {
     try {
-      // Xoá sách chính
       await AsyncStorage.removeItem(`offline:${bookId}`);
 
       // Lấy tất cả keys chương để xoá

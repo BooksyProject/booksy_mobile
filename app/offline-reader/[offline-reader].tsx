@@ -1,78 +1,3 @@
-// // app/offline-reader.tsx
-// import React from "react";
-// import { useLocalSearchParams } from "expo-router";
-// import { View, Platform } from "react-native";
-// import { WebView } from "react-native-webview";
-// import Pdf from "react-native-pdf";
-
-// export default function OfflineReader() {
-//   const { filePath } = useLocalSearchParams<{ filePath: string }>();
-//   if (!filePath) return null;
-
-//   const decodedPath = decodeURIComponent(filePath);
-
-//   const isEPUB = decodedPath.toLowerCase().endsWith(".epub");
-//   const isPDF = decodedPath.toLowerCase().endsWith(".pdf");
-
-//   if (isEPUB) {
-//     const htmlContent = `
-//       <!DOCTYPE html>
-//       <html>
-//       <head>
-//         <meta charset="utf-8" />
-//         <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
-//         <style>
-//           html, body { margin: 0; padding: 0; height: 100%; }
-//           #viewer { height: 100%; }
-//         </style>
-//       </head>
-//       <body>
-//         <div id="viewer"></div>
-//         <script>
-//           const book = ePub("${decodedPath}");
-//           const rendition = book.renderTo("viewer", {
-//             width: "100%",
-//             height: "100%",
-//           });
-//           rendition.display();
-//         </script>
-//       </body>
-//       </html>
-//     `;
-
-//     return (
-//       <View style={{ flex: 1 }}>
-//         <WebView
-//           originWhitelist={["*"]}
-//           source={{ html: htmlContent }}
-//           allowFileAccess
-//           allowFileAccessFromFileURLs
-//         />
-//       </View>
-//     );
-//   }
-
-//   if (isPDF) {
-//     return (
-//       <View style={{ flex: 1 }}>
-//         <Pdf
-//           source={{ uri: decodedPath }}
-//           style={{ flex: 1 }}
-//           trustAllCerts={Platform.OS === "android"}
-//           onLoadComplete={(pages) =>
-//             console.log(`Tải PDF xong: ${pages} trang`)
-//           }
-//           onError={(error) => console.log("Lỗi PDF:", error)}
-//         />
-//       </View>
-//     );
-//   }
-
-//   return null;
-// }
-
-// ReaderScreen.tsx - Phiên bản sử dụng Context
-
 import { useEffect, useState } from "react";
 import {
   View,
@@ -182,37 +107,38 @@ export default function OfflineReader() {
   };
 
   const themeStyles = getThemeStyles();
+
   useEffect(() => {
     const loadOfflineChapter = async () => {
       try {
         setLoading(true);
-        const rawId = Array.isArray(bookId) ? bookId[0] : bookId;
-        const isOffline = rawId.startsWith("offline");
-        const idOnly = isOffline ? rawId.replace(/^offline[: ]?/, "") : rawId;
 
-        const key = isOffline ? `offline:${idOnly}` : idOnly;
-        const rawBook = await AsyncStorage.getItem(key);
+        const rawId = Array.isArray(bookId) ? bookId[0] : (bookId as string);
+        const isOffline = rawId.startsWith("offline-");
+        const bookIdOnly = isOffline ? rawId.replace("offline-", "") : rawId;
+        const storageKey = `offline:${bookIdOnly}`;
+        const rawBook = await AsyncStorage.getItem(storageKey);
 
         if (!rawBook) {
-          console.warn("📦 Book not found in offline storage!");
+          console.warn("⚠️ Book not found in offline storage.");
           return;
         }
 
         const book = JSON.parse(rawBook);
         setChapterTotal(book.chapters.length);
 
-        const chapter = book.chapters.find(
+        const chapterFound = book.chapters.find(
           (c: ChapterData) => c.chapterNumber === chapterNumber
         );
 
-        if (!chapter) {
-          console.warn("📦 Chapter not found in offline book data!");
+        if (!chapterFound) {
+          console.warn("⚠️ Chapter not found.");
           return;
         }
 
-        setChapterData(chapter);
+        setChapterData(chapterFound);
       } catch (error) {
-        console.error("❌ Lỗi khi load dữ liệu sách offline:", error);
+        console.error("❌ Lỗi khi load dữ liệu offline:", error);
       } finally {
         setLoading(false);
       }
@@ -281,7 +207,7 @@ export default function OfflineReader() {
   return (
     <View className={`flex-1 ${themeStyles.container}`}>
       <SafeAreaView>
-        <View className="flex-row justify-between items-center px-4 py-2 mt-10">
+        <View className="flex-row justify-between items-center px-4 py-2">
           <TouchableOpacity
             onPress={() => router.back()}
             className="p-2 rounded-lg"
@@ -326,7 +252,7 @@ export default function OfflineReader() {
         )}
       </ScrollView>
       <View
-        className={`absolute bottom-0 left-0 right-0 border-t px-6 pt-2 pb-16 ${themeStyles.border} ${themeStyles.container}`}
+        className={`absolute bottom-0 left-0 right-0 border-t px-6 pt-2 ${themeStyles.border} ${themeStyles.container}`}
       >
         <Pagination
           currentPage={chapterNumber}

@@ -75,7 +75,7 @@ export default function DownloadButton({ bookData }: Props) {
           };
 
           await AsyncStorage.setItem(
-            `offline:${bookData._id}:chapter:${chapter.chapterNumber}`,
+            `offline:${bookData._id}`,
             JSON.stringify(chapterData)
           );
 
@@ -87,7 +87,7 @@ export default function DownloadButton({ bookData }: Props) {
         }
       }
 
-      const offlineBookData = {
+      const offlineBook = {
         ...bookData,
         _id: `offline-${bookData._id}`,
         chapters: chapterContents,
@@ -97,12 +97,11 @@ export default function DownloadButton({ bookData }: Props) {
 
       await AsyncStorage.setItem(
         `offline:${bookData._id}`,
-        JSON.stringify(offlineBookData)
+        JSON.stringify(offlineBook)
       );
 
-      addBookToLibrary(offlineBookData); // ✅ Bây giờ đã được khai báo rồi mới gọi
+      addBookToLibrary(offlineBook);
 
-      console.log(`✅ offline:${bookData._id}`, offlineBookData);
       alert("📚 Tải xuống và lưu sách offline thành công!");
     } catch (error) {
       console.error("❌ Download failed:", error);

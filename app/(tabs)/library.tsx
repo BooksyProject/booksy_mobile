@@ -36,7 +36,7 @@ const Library = () => {
     useState<BookTypeFilter>("all");
   const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
 
-  const { offlineBooks, refreshLibrary } = useLibrary(); // ✅ Lấy từ context
+  const { offlineBooks, refreshLibrary } = useLibrary();
 
   const getPercentage = (chapterNumber: number, totalChapters: number) => {
     if (totalChapters === 0) return 0;
