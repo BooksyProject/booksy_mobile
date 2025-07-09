@@ -116,7 +116,11 @@ const CHUNK_SIZE = 10; // Render theo chunks
 export default function ReaderScreen() {
   const { width } = useWindowDimensions();
   const router = useRouter();
+
+  // Thay đổi cách quản lý refs
   const scrollViewRef = useRef<ScrollView>(null);
+  const paragraphRefs = useRef<Record<number, View | null>>({});
+  const paragraphPositions = useRef<Record<number, number>>({});
 
   // Params
   const { bookId, chapter, position } = useLocalSearchParams();
@@ -140,7 +144,6 @@ export default function ReaderScreen() {
   const [showBookmarksList, setShowBookmarksList] = useState(false);
   const [bookmarkNote, setBookmarkNote] = useState("");
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const paragraphRefs = useRef<Record<number, View>>(Object.create(null));
 
   // UI states
   const [showSettings, setShowSettings] = useState(false);
@@ -491,14 +494,19 @@ export default function ReaderScreen() {
       return;
 
     try {
-      setIsSaving(true); // Bắt đầu quá trình lưu
+      setIsSaving(true);
       const userId = await AsyncStorage.getItem("userId");
       if (!userId) return;
+
+      // Tính toán vị trí chính xác của paragraph
+      const paragraphPosition = paragraphPositions.current[selectedIndex] || 0;
+      const relativePosition =
+        contentHeight > 0 ? paragraphPosition / contentHeight : scrollPosition;
 
       await addBookmark(
         String(bookId),
         chapterData._id,
-        scrollPosition,
+        relativePosition,
         userId,
         bookmarkNote,
         selectedIndex
@@ -523,6 +531,7 @@ export default function ReaderScreen() {
     selectedIndex,
     scrollPosition,
     bookmarkNote,
+    contentHeight,
     getBookmarkCacheKey,
     isSaving,
   ]);
@@ -557,12 +566,18 @@ export default function ReaderScreen() {
       setShowBookmarksList(false);
 
       if (chapterData && chapterData._id === bookmark.chapterId._id) {
+        // Nếu đang ở cùng chapter, scroll đến vị trí bookmark
         const scrollY =
           contentHeight > layoutHeight
             ? bookmark.position * (contentHeight - layoutHeight)
             : 0;
-        scrollViewRef.current?.scrollTo({ y: scrollY, animated: true });
+
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(0, scrollY),
+          animated: true,
+        });
       } else {
+        // Nếu khác chapter, chuyển đến chapter đó
         router.replace({
           pathname: "/reader/[bookId]",
           params: {
@@ -645,17 +660,26 @@ export default function ReaderScreen() {
     return saveProgress;
   }, [chapterData, save]);
 
+  // Hàm để lưu vị trí của mỗi paragraph
+  const onParagraphLayout = useCallback((index: number, event: any) => {
+    const { y } = event.nativeEvent.layout;
+    paragraphPositions.current[index] = y;
+  }, []);
+
   // Render functions
   const renderParagraph = useCallback(
     ({ html, index }: { html: string; index: number }) => {
       const isBookmarked = bookmarks.some(
         (b) => b.index === index && b.chapterId._id === chapterData?._id
       );
+
       return (
-        <TouchableOpacity
+        <View
           key={index}
-          onLongPress={() => handleLongPress(index)}
-          activeOpacity={0.9}
+          ref={(ref) => {
+            paragraphRefs.current[index] = ref;
+          }}
+          onLayout={(event) => onParagraphLayout(index, event)}
           style={{
             backgroundColor: isBookmarked ? "#e1cf2c" : "transparent",
             paddingVertical: 4,
@@ -663,27 +687,34 @@ export default function ReaderScreen() {
             borderRadius: 4,
           }}
         >
-          <RenderHTML
-            contentWidth={width}
-            source={{ html }}
-            baseStyle={{
-              fontSize: settings.fontSize,
-              lineHeight: settings.fontSize * 1.75,
-              color: themeStyles.content,
-              fontFamily: getCurrentFontFamily(),
-            }}
-            defaultTextProps={{ selectable: true }}
-          />
-        </TouchableOpacity>
+          <TouchableOpacity
+            onLongPress={() => handleLongPress(index)}
+            activeOpacity={0.9}
+          >
+            <RenderHTML
+              contentWidth={width}
+              source={{ html }}
+              baseStyle={{
+                fontSize: settings.fontSize,
+                lineHeight: settings.fontSize * 1.75,
+                color: themeStyles.content,
+                fontFamily: getCurrentFontFamily(),
+              }}
+              defaultTextProps={{ selectable: true }}
+            />
+          </TouchableOpacity>
+        </View>
       );
     },
     [
       bookmarks,
+      chapterData,
       handleLongPress,
       width,
       settings.fontSize,
       themeStyles.content,
       getCurrentFontFamily,
+      onParagraphLayout,
     ]
   );
 
@@ -710,31 +741,61 @@ export default function ReaderScreen() {
   };
 
   useEffect(() => {
-    if (contentReady && bookmarkPosition >= 0) {
+    if (
+      bookmarkPosition > 0 &&
+      chapterData &&
+      contentReady &&
+      contentHeight > 0
+    ) {
       InteractionManager.runAfterInteractions(() => {
         setTimeout(() => {
-          scrollToBookmark();
-        }, 500); // Delay tùy độ nặng của nội dung
+          if (scrollViewRef.current) {
+            const scrollY =
+              contentHeight > layoutHeight
+                ? bookmarkPosition * (contentHeight - layoutHeight)
+                : 0;
+
+            scrollViewRef.current.scrollTo({
+              y: Math.max(0, scrollY),
+              animated: true,
+            });
+          }
+        }, AUTO_SCROLL_DELAY);
       });
     }
-  }, [contentReady, bookmarkPosition]);
+  }, [
+    bookmarkPosition,
+    chapterData,
+    contentReady,
+    contentHeight,
+    layoutHeight,
+  ]);
 
   const renderBookmarkItem = useCallback(
     ({ item }: { item: BookmarkData }) => (
       <TouchableOpacity
-        className="p-3 border-b"
+        className="p-3 border-b flex-row items-center justify-between"
         onPress={() => navigateToBookmark(item)}
       >
-        <Text className={`font-bold ${themeStyles.text}`}>
-          Chương {item.chapterId.chapterNumber}:{" "}
-          {Math.round(item.position * 100)}%
-        </Text>
-        {item.note && (
-          <Text className={`mt-1 ${themeStyles.text}`}>{item.note}</Text>
-        )}
+        <View className="flex-1">
+          <Text className={`font-bold ${themeStyles.text}`}>
+            Chương {item.chapterId.chapterNumber}
+          </Text>
+          <Text className={`text-sm ${themeStyles.text} opacity-70`}>
+            Vị trí: {Math.round(item.position * 100)}%
+          </Text>
+          {item.note && (
+            <Text className={`mt-1 text-sm ${themeStyles.text}`}>
+              "{item.note}"
+            </Text>
+          )}
+        </View>
         <TouchableOpacity
-          onPress={() => handleRemoveBookmark(item)}
-          className="absolute right-2 top-2"
+          onPress={(e) => {
+            e.stopPropagation();
+            handleRemoveBookmark(item);
+          }}
+          className="p-2"
         >
           <TrashIcon color={textColor} size={18} />
         </TouchableOpacity>
@@ -842,20 +903,15 @@ export default function ReaderScreen() {
         scrollEventThrottle={SCROLL_THROTTLE}
         contentInsetAdjustmentBehavior="automatic"
         onLayout={(e) => setLayoutHeight(e.nativeEvent.layout.height)}
-        onContentSizeChange={(contentHeight) => setContentHeight(contentHeight)}
+        onContentSizeChange={(contentWidth, contentHeight) => {
+          setContentHeight(contentHeight);
+        }}
         removeClippedSubviews={true}
       >
-        {/* Progressive rendering */}
-        {visibleParagraphs.map((html, index) => (
-          <View
-            key={index}
-            ref={(ref) => {
-              if (ref) paragraphRefs.current[index] = ref;
-            }}
-          >
-            {renderParagraph({ html, index })}
-          </View>
-        ))}
+        {/* Progressive rendering với cải thiện */}
+        {visibleParagraphs.map((html, index) =>
+          renderParagraph({ html, index })
+        )}
 
         {/* Loading indicator for more content */}
         {renderChunks * CHUNK_SIZE < paragraphs.length && (
