@@ -43,7 +43,26 @@ import {
 
 // Components
 import Pagination from "@/components/ui/Pagination";
-import { ArrowIcon, SettingsIcon, TrashIcon } from "@/components/icon/Icons";
+import { WebView } from "react-native-webview";
+import {
+  ArrowIcon,
+  CommentIcon,
+  SendIcon,
+  SettingsIcon,
+  TrashIcon,
+} from "@/components/icon/Icons";
+import { MessageCircle } from "lucide-react-native";
+import {
+  createComment,
+  getCommentByChapterId,
+} from "@/lib/service/comment.service";
+import CommentCard from "@/components/card/comment/CommentCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserBasicInfo } from "@/dtos/UserDTO";
+import { useTheme } from "@/contexts/ThemeContext";
+import { colors } from "@/styles/colors";
+import { CommentResponseDTO } from "@/dtos/CommentDTO";
+import Input from "@/components/ui/input";
 
 // Cache Management
 const chapterCache = new Map<string, ChapterData>();
@@ -125,7 +144,33 @@ export default function ReaderScreen() {
   // UI states
   const [showSettings, setShowSettings] = useState(false);
 
-  // Hooks
+  // Hooks  const { profile } = useAuth();
+  const [profileBasic, setProfileBasic] = useState<UserBasicInfo | null>(null);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const profileString = await AsyncStorage.getItem("profile");
+        if (profileString) {
+          const profile = JSON.parse(profileString);
+
+          setProfileBasic({
+            _id: profile._id || "",
+            avatar: profile.avatar || "",
+            firstName: profile.firstName || "Anonymous",
+            lastName: profile.lastName || "Anonymous",
+          });
+        }
+      } catch (error) {
+        console.error("❌ Failed to load profile from AsyncStorage:", error);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  const [numberOfComments, setNumberOfComments] = useState(0);
+  const { colorScheme, toggleColorScheme } = useTheme();
   const {
     settings,
     updateTheme,
@@ -133,6 +178,9 @@ export default function ReaderScreen() {
     updateFontSize,
     isLoading: settingsLoading,
   } = useReaderSettings();
+  // const isReaderDark = settings.theme === "dark";
+  // const textColor = isReaderDark ? "#F1EEE3" : "#26212A";
+
   const { save, updateProgress } = useReadingProgressManager(bookId as string);
 
   // Memoized values
@@ -144,6 +192,66 @@ export default function ReaderScreen() {
     () => (isReaderDark ? "#F1EEE3" : "#26212A"),
     [isReaderDark]
   );
+
+  const bgColor = isReaderDark ? colors.dark[200] : colors.light[200];
+  const [bookComments, setBookComments] = useState<any[]>([]);
+  const [showComments, setShowComments] = useState(false);
+  const [comment, setComment] = useState("");
+
+  const handleOpenComments = async () => {
+    if (!chapterData?._id) return;
+    try {
+      const data = await getCommentByChapterId(chapterData._id);
+      setBookComments(data);
+      setNumberOfComments(data.length); // Cập nhật số lượng
+      setShowComments(true);
+    } catch (error) {
+      console.error("❌ Lỗi khi mở modal và fetch comment:", error);
+    }
+  };
+
+  const handleSendComment = async () => {
+    const token: string | null = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      console.error("User is not authenticated");
+      return;
+    }
+
+    if (!comment.trim()) {
+      console.warn("Comment cannot be empty");
+      return;
+    }
+    if (!chapterData?._id) return;
+    try {
+      const newCommentData = await createComment(
+        { content: comment },
+        token,
+        chapterData?._id
+      );
+
+      const currentTime = new Date();
+      const enrichedComment: CommentResponseDTO = {
+        ...newCommentData,
+        author: {
+          _id: profileBasic?._id || "",
+          avatar:
+            profileBasic?.avatar ||
+            "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
+          firstName: profileBasic?.firstName || "Anonymous",
+          lastName: profileBasic?.lastName || "Anonymous",
+        },
+        createAt: currentTime,
+        likes: [],
+      };
+      setBookComments((prev: any) => [enrichedComment, ...prev]);
+
+      setNumberOfComments(numberOfComments + 1);
+      setComment("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
 
   const getCurrentFontFamily = useCallback(() => {
     return (
@@ -235,6 +343,8 @@ export default function ReaderScreen() {
           `src="${IMAGE_BASE_URL}/$1"`
         ),
       };
+
+      console.log(data, "dataaaaaaaaaaaaaaa");
 
       // Cache the result
       chapterCache.set(cacheKey, processedData);
@@ -332,14 +442,12 @@ export default function ReaderScreen() {
     await Promise.all(promises);
   }, [bookId, chapterNumber, chapterTotal, getChapterCacheKey]);
 
-  // Progressive rendering
   const loadMoreChunks = useCallback(() => {
     if (renderChunks * CHUNK_SIZE < paragraphs.length) {
       setRenderChunks((prev) => prev + 1);
     }
   }, [paragraphs.length, renderChunks]);
 
-  // Event handlers
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const { contentOffset, contentSize, layoutMeasurement } =
@@ -395,7 +503,6 @@ export default function ReaderScreen() {
         selectedIndex
       );
 
-      // Update cache
       const cacheKey = getBookmarkCacheKey(String(bookId));
       const updated = await getBookmarks(String(bookId), userId);
       bookmarkCache.set(cacheKey, updated);
@@ -407,7 +514,7 @@ export default function ReaderScreen() {
     } catch (err) {
       console.error("❌ Failed to add bookmark:", err);
     } finally {
-      setIsSaving(false); // Kết thúc quá trình lưu dù thành công hay thất bại
+      setIsSaving(false);
     }
   }, [
     chapterData,
@@ -416,7 +523,7 @@ export default function ReaderScreen() {
     scrollPosition,
     bookmarkNote,
     getBookmarkCacheKey,
-    isSaving, // Thêm isSaving vào dependencies
+    isSaving,
   ]);
 
   const handleRemoveBookmark = useCallback(
@@ -432,7 +539,6 @@ export default function ReaderScreen() {
           userId
         );
 
-        // Update cache
         const cacheKey = getBookmarkCacheKey(String(bookId));
         const updatedBookmarks = await getBookmarks(String(bookId), userId);
         bookmarkCache.set(cacheKey, updatedBookmarks);
@@ -487,14 +593,10 @@ export default function ReaderScreen() {
     setShowBookmarkModal(true);
   }, []);
 
-  // Effects
   useEffect(() => {
-    // Parallel loading with priority
     const loadData = async () => {
-      // High priority: Chapter data
       await fetchChapter();
 
-      // Medium priority: Chapter total and bookmarks
       InteractionManager.runAfterInteractions(() => {
         fetchChapterTotal();
         fetchBookmarks();
@@ -654,7 +756,7 @@ export default function ReaderScreen() {
   }
 
   // Settings loading can be non-blocking
-  if (settingsLoading) {
+  if (settingsLoading || !chapterData) {
     return (
       <View
         className={`flex-1 justify-center items-center ${themeStyles.container}`}
@@ -693,7 +795,12 @@ export default function ReaderScreen() {
           </View>
         </View>
       </SafeAreaView>
-
+      <TouchableOpacity
+        onPress={handleOpenComments}
+        className="absolute bottom-36 right-4 z-50 bg-white dark:bg-black p-3 rounded-full shadow"
+      >
+        <CommentIcon color={textColor} size={27} />
+      </TouchableOpacity>
       <ScrollView
         className="flex-1 px-4 pt-6 pb-40"
         ref={scrollViewRef}
@@ -812,6 +919,148 @@ export default function ReaderScreen() {
           }}
         />
       </View>
+
+      <Modal
+        visible={showComments}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowComments(false)}
+      >
+        <SafeAreaView
+          className="flex-1 px-4 pt-6 "
+          style={{ backgroundColor: bgColor }}
+        >
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-mbold " style={{ color: textColor }}>
+              Comments
+            </Text>
+            <TouchableOpacity onPress={() => setShowComments(false)}>
+              <Ionicons name="close" size={24} color={textColor} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="space-y-4">
+            {bookComments.length === 0 ? (
+              <Text className="text-center text-gray-500">No comment yet.</Text>
+            ) : (
+              bookComments.map(
+                (comment) =>
+                  comment.parentId === null && (
+                    <View key={comment._id}>
+                      {profileBasic && (
+                        <CommentCard
+                          comment={comment}
+                          commentsData={bookComments}
+                          setCommentsData={setBookComments}
+                          author={comment.author}
+                          chapterId={chapterData._id}
+                          profileBasic={profileBasic}
+                          setNumberOfComments={setNumberOfComments}
+                          numberOfComments={numberOfComments}
+                          textColor={textColor}
+                          bgColor={bgColor}
+                        />
+                      )}
+                    </View>
+                  )
+              )
+            )}
+          </ScrollView>
+          <View
+            className="absolute bottom-0 left-0 right-0 px-2 py-2"
+            style={{
+              backgroundColor:
+                colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+            }}
+          >
+            <View className="w-full flex-row items-center space-x-2">
+              <View className="flex-1">
+                <Input
+                  // avatarSrc={profileBasic?.avatar || "/assets/images/capy.jpg"}
+                  placeholder="Write a comment"
+                  readOnly={false}
+                  value={comment}
+                  onChangeText={setComment}
+                />
+              </View>
+              <TouchableOpacity onPress={handleSendComment}>
+                <SendIcon size={27} color={colors.primary[100]} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
+
+      <Modal
+        visible={showComments}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowComments(false)}
+      >
+        <SafeAreaView
+          className="flex-1 px-4 pt-6 "
+          style={{ backgroundColor: bgColor }}
+        >
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-mbold " style={{ color: textColor }}>
+              Comments
+            </Text>
+            <TouchableOpacity onPress={() => setShowComments(false)}>
+              <Ionicons name="close" size={24} color={textColor} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="space-y-4">
+            {bookComments.length === 0 ? (
+              <Text className="text-center text-gray-500">No comment yet.</Text>
+            ) : (
+              bookComments.map(
+                (comment) =>
+                  comment.parentId === null && (
+                    <View key={comment._id}>
+                      {profileBasic && (
+                        <CommentCard
+                          comment={comment}
+                          commentsData={bookComments}
+                          setCommentsData={setBookComments}
+                          author={comment.author}
+                          chapterId={chapterData._id}
+                          profileBasic={profileBasic}
+                          setNumberOfComments={setNumberOfComments}
+                          numberOfComments={numberOfComments}
+                          textColor={textColor}
+                          bgColor={bgColor}
+                        />
+                      )}
+                    </View>
+                  )
+              )
+            )}
+          </ScrollView>
+          <View
+            className="absolute bottom-0 left-0 right-0 px-2 py-2"
+            style={{
+              backgroundColor:
+                colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+            }}
+          >
+            <View className="w-full flex-row items-center space-x-2">
+              <View className="flex-1">
+                <Input
+                  // avatarSrc={profileBasic?.avatar || "/assets/images/capy.jpg"}
+                  placeholder="Write a comment"
+                  readOnly={false}
+                  value={comment}
+                  onChangeText={setComment}
+                />
+              </View>
+              <TouchableOpacity onPress={handleSendComment}>
+                <SendIcon size={27} color={colors.primary[100]} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       {/* Settings Modal */}
       <Modal
