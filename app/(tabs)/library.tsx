@@ -33,7 +33,7 @@ const Library = () => {
   const [booksData, setBooksData] = useState<BookWithProgress[]>([]);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedBookType, setSelectedBookType] =
-    useState<BookTypeFilter>("all");
+    useState<BookTypeFilter>("online");
   const [categoryData, setCategoryData] = useState<CategoryResponseDTO[]>([]);
 
   const { offlineBooks, refreshLibrary } = useLibrary();

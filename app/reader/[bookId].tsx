@@ -46,6 +46,7 @@ import Pagination from "@/components/ui/Pagination";
 import { WebView } from "react-native-webview";
 import {
   ArrowIcon,
+  CloseIcon,
   CommentIcon,
   SendIcon,
   SettingsIcon,
@@ -202,61 +203,6 @@ export default function ReaderScreen() {
   const [showComments, setShowComments] = useState(false);
   const [comment, setComment] = useState("");
 
-  const handleOpenComments = async () => {
-    if (!chapterData?._id) return;
-    try {
-      const data = await getCommentByChapterId(chapterData._id);
-      setBookComments(data);
-      setNumberOfComments(data.length); // Cập nhật số lượng
-      setShowComments(true);
-    } catch (error) {
-      console.error("❌ Lỗi khi mở modal và fetch comment:", error);
-    }
-  };
-
-  const handleSendComment = async () => {
-    const token: string | null = await AsyncStorage.getItem("token");
-
-    if (!token) {
-      console.error("User is not authenticated");
-      return;
-    }
-
-    if (!comment.trim()) {
-      console.warn("Comment cannot be empty");
-      return;
-    }
-    if (!chapterData?._id) return;
-    try {
-      const newCommentData = await createComment(
-        { content: comment },
-        token,
-        chapterData?._id
-      );
-
-      const currentTime = new Date();
-      const enrichedComment: CommentResponseDTO = {
-        ...newCommentData,
-        author: {
-          _id: profileBasic?._id || "",
-          avatar:
-            profileBasic?.avatar ||
-            "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
-          firstName: profileBasic?.firstName || "Anonymous",
-          lastName: profileBasic?.lastName || "Anonymous",
-        },
-        createAt: currentTime,
-        likes: [],
-      };
-      setBookComments((prev: any) => [enrichedComment, ...prev]);
-
-      setNumberOfComments(numberOfComments + 1);
-      setComment("");
-    } catch (error) {
-      console.error("Failed to add comment:", error);
-    }
-  };
-
   const getCurrentFontFamily = useCallback(() => {
     return (
       FONT_OPTIONS.find((font) => font.key === settings.font)?.fontFamily ||
@@ -347,9 +293,6 @@ export default function ReaderScreen() {
           `src="${IMAGE_BASE_URL}/$1"`
         ),
       };
-
-      console.log(data, "dataaaaaaaaaaaaaaa");
-
       // Cache the result
       chapterCache.set(cacheKey, processedData);
 
@@ -609,6 +552,62 @@ export default function ReaderScreen() {
     setShowBookmarkModal(true);
   }, []);
 
+  const handleOpenComments = async () => {
+    if (!chapterData || !chapterData._id) return;
+
+    try {
+      const data = await getCommentByChapterId(chapterData._id);
+      setBookComments(data);
+      setNumberOfComments(data.length); // Cập nhật số lượng
+      setShowComments(true);
+    } catch (error) {
+      console.error("❌ Lỗi khi mở modal và fetch comment:", error);
+    }
+  };
+
+  const handleSendComment = async () => {
+    const token: string | null = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      console.error("User is not authenticated");
+      return;
+    }
+
+    if (!comment.trim()) {
+      console.warn("Comment cannot be empty");
+      return;
+    }
+    if (!chapterData?._id) return;
+    try {
+      const newCommentData = await createComment(
+        { content: comment },
+        token,
+        chapterData?._id
+      );
+
+      const currentTime = new Date();
+      const enrichedComment: CommentResponseDTO = {
+        ...newCommentData,
+        author: {
+          _id: profileBasic?._id || "",
+          avatar:
+            profileBasic?.avatar ||
+            "https://i.pinimg.com/736x/9a/00/82/9a0082d8f710e7b626a114657ec5b781.jpg",
+          firstName: profileBasic?.firstName || "Anonymous",
+          lastName: profileBasic?.lastName || "Anonymous",
+        },
+        createAt: currentTime,
+        likes: [],
+      };
+      setBookComments((prev: any) => [enrichedComment, ...prev]);
+
+      setNumberOfComments(numberOfComments + 1);
+      setComment("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
+
   useEffect(() => {
     const loadData = async () => {
       await fetchChapter();
@@ -718,28 +717,6 @@ export default function ReaderScreen() {
     ]
   );
 
-  const scrollToBookmark = () => {
-    const paragraphRef = paragraphRefs.current[bookmarkPosition];
-
-    if (paragraphRef && scrollViewRef.current) {
-      try {
-        paragraphRef.measureLayout(
-          scrollViewRef.current.getInnerViewNode(),
-          (x, y) => {
-            scrollViewRef.current?.scrollTo({ y, animated: true });
-          },
-          () => {
-            console.warn("❌ measureLayout failed");
-          }
-        );
-      } catch (e) {
-        console.warn("❌ Failed to measure paragraph:", e);
-      }
-    } else {
-      console.warn("❌ Bookmark ref not available");
-    }
-  };
-
   useEffect(() => {
     if (
       bookmarkPosition > 0 &&
@@ -779,11 +756,9 @@ export default function ReaderScreen() {
       >
         <View className="flex-1">
           <Text className={`font-bold ${themeStyles.text}`}>
-            Chương {item.chapterId.chapterNumber}
+            Trang {item.chapterId.chapterNumber}
           </Text>
-          <Text className={`text-sm ${themeStyles.text} opacity-70`}>
-            Vị trí: {Math.round(item.position * 100)}%
-          </Text>
+
           {item.note && (
             <Text className={`mt-1 text-sm ${themeStyles.text}`}>
               "{item.note}"
@@ -890,12 +865,14 @@ export default function ReaderScreen() {
           </View>
         </View>
       </SafeAreaView>
+
       <TouchableOpacity
         onPress={handleOpenComments}
         className="absolute bottom-36 right-4 z-50 bg-white dark:bg-black p-3 rounded-full shadow"
       >
         <CommentIcon color={textColor} size={27} />
       </TouchableOpacity>
+
       <ScrollView
         className="flex-1 px-4 pt-6 pb-40"
         ref={scrollViewRef}
@@ -924,7 +901,6 @@ export default function ReaderScreen() {
         )}
       </ScrollView>
 
-      {/* Rest of the modals remain the same */}
       {/* Bookmark Modal */}
       <Modal
         visible={showBookmarkModal}
@@ -935,7 +911,7 @@ export default function ReaderScreen() {
         <View className="flex-1 justify-center items-center bg-black/50">
           <View className={`w-4/5 p-4 rounded-lg ${themeStyles.modal}`}>
             <Text className={`text-lg font-bold mb-4 ${themeStyles.text}`}>
-              Thêm Bookmark tại {Math.round(scrollPosition * 100)}%
+              Thêm Bookmark
             </Text>
             <TextInput
               placeholder="Ghi chú (tuỳ chọn)"
@@ -977,12 +953,14 @@ export default function ReaderScreen() {
               Bookmarks
             </Text>
             <TouchableOpacity onPress={() => setShowBookmarksList(false)}>
-              <EyeClosed color={textColor} size={24} />
+              <CloseIcon color={textColor} size={24} />
             </TouchableOpacity>
           </View>
 
           <FlatList
-            data={bookmarks}
+            data={[...bookmarks].sort(
+              (a, b) => a.chapterId.chapterNumber - b.chapterId.chapterNumber
+            )}
             keyExtractor={(item) => item._id}
             renderItem={renderBookmarkItem}
             getItemLayout={(data, index) => ({

@@ -114,7 +114,7 @@ const Home = () => {
 
   return (
     <ScrollView
-      className="flex-1 pt-[60px] px-5"
+      className="flex-1 pt-[40px] px-5"
       showsVerticalScrollIndicator={false}
       style={{
         backgroundColor: isDark ? colors.dark[200] : colors.light[200],
