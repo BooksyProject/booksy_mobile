@@ -32,7 +32,13 @@ const SignIn = () => {
         const userId = decodedToken?.id;
         await AsyncStorage.setItem("userId", userId);
         const profileData = await getMyProfile(userId);
+        console.log("profileeee", profileData.userProfile);
+        await AsyncStorage.setItem(
+          "profile",
+          JSON.stringify(profileData.userProfile)
+        );
         setProfile(profileData.userProfile);
+
         router.push("home" as any);
       }
     } catch (error) {

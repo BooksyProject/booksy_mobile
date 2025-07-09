@@ -6,6 +6,7 @@ import { UserBasicInfo } from "@/dtos/UserDTO";
 import { CommentResponseDTO } from "@/dtos/CommentDTO";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ArrowRightIcon } from "@/components/icon/Icons";
+import CommentMenu from "@/components/modal/comment/CommentMenu";
 
 interface ReplyCardProps {
   reply: CommentResponseDTO;
@@ -18,6 +19,8 @@ interface ReplyCardProps {
   setNumberOfComments: React.Dispatch<React.SetStateAction<number>>;
   numberOfComments: number;
   setCommentsData: React.Dispatch<React.SetStateAction<CommentResponseDTO[]>>;
+  textColor: string;
+  bgColor: string;
 }
 
 const ReplyCard = ({
@@ -31,6 +34,8 @@ const ReplyCard = ({
   setNumberOfComments,
   numberOfComments,
   setCommentsData,
+  textColor,
+  bgColor,
 }: ReplyCardProps) => {
   const { colorScheme } = useTheme();
   const iconColor =
@@ -57,8 +62,7 @@ const ReplyCard = ({
           <View className="ml-3">
             <Text
               style={{
-                color:
-                  colorScheme === "dark" ? colors.dark[100] : colors.light[100],
+                color: textColor,
               }}
               className="font-mmedium text-[16px]"
             >
@@ -71,10 +75,7 @@ const ReplyCard = ({
 
                   <Text
                     style={{
-                      color:
-                        colorScheme === "dark"
-                          ? colors.dark[100]
-                          : colors.light[100],
+                      color: textColor,
                     }}
                     className="font-mmedium text-[16px]"
                   >
@@ -88,19 +89,23 @@ const ReplyCard = ({
               )}
             </Text>
             <View
-              className=" rounded-r-[20px] rounded-bl-[20px] px-[15px] py-[10px]  self-start"
               style={{
-                backgroundColor:
-                  colorScheme === "dark" ? colors.dark[400] : colors.light[400],
+                paddingHorizontal: 15,
+                paddingVertical: 10,
+                alignSelf: "flex-start",
+                backgroundColor: bgColor,
+                borderColor: "#CCCCCC",
+                borderWidth: 1,
+                borderTopRightRadius: 20,
+                borderBottomRightRadius: 20,
+                borderBottomLeftRadius: 20,
+                overflow: "hidden", // 👈 Thêm dòng này để Android render đúng border radius
               }}
             >
               <Text
                 className="text-[16px] font-mregular inline-block"
                 style={{
-                  color:
-                    colorScheme === "dark"
-                      ? colors.dark[100]
-                      : colors.light[100],
+                  color: textColor,
                 }}
               >
                 {reply.content}
@@ -116,10 +121,12 @@ const ReplyCard = ({
               author={author}
               originalCommentId={commentId}
               setRepliesData={setRepliesData}
+              textColor={textColor}
+              bgColor={bgColor}
             />
           </View>
         </View>
-        {/* <Modal
+        <Modal
           transparent={true}
           visible={isModalVisible}
           animationType="fade"
@@ -127,15 +134,17 @@ const ReplyCard = ({
         >
           <CommentMenu
             comment={reply}
-            // commentsData={repliesData}
             setCommentsData={setRepliesData}
             setModalVisible={setModalVisible}
             chapterId={chapterId}
-            mediaId={mediaId}
             setNumberOfComments={setNumberOfComments}
             numberOfComments={numberOfComments}
+            repliesCount={repliesData?.length}
+            profileBasic={profileBasic}
+            textColor={textColor}
+            bgColor={bgColor}
           />
-        </Modal> */}
+        </Modal>
       </TouchableOpacity>
     </View>
   );
