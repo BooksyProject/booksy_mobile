@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,28 +9,36 @@ import {
   Modal,
 } from "react-native";
 import { BlurView } from "@react-native-community/blur";
-import { HeartIcon } from "lucide-react-native";
 import { BookResponseDTO } from "@/dtos/BookDTO";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import BookDetailCard from "./BookDetailCard";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface BookCardProps {
   book: BookResponseDTO;
+  onRefresh?: () => void; // 👈 thêm prop
 }
 
-const BookCard: React.FC<BookCardProps> = ({ book }) => {
+const BookCard: React.FC<BookCardProps> = ({ book, onRefresh }) => {
   const { colorScheme } = useTheme();
   const isDark = colorScheme === "dark";
   const [isModalVisible, setModalVisible] = useState(false);
   const bgColor = isDark ? colors.dark[200] : colors.light[200];
   const textColor = isDark ? colors.dark[100] : colors.light[100];
-  const openModal = async () => {
-    setModalVisible(true);
-  };
+
+  const [userId, setUserId] = useState<string | null>(null);
+  useEffect(() => {
+    const fetchUserId = async () => {
+      const id = await AsyncStorage.getItem("userId");
+      setUserId(id);
+    };
+    fetchUserId();
+  }, []);
+
   return (
     <TouchableOpacity
-      onPress={openModal}
+      onPress={() => setModalVisible(true)}
       className="w-[166px] h-[235px] rounded-5 overflow-hidden mr-4"
       activeOpacity={0.9}
     >
@@ -66,17 +74,27 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
                 {book.author}
               </Text>
             </View>
-            {/* <HeartIcon size={20} color="black" /> */}
           </View>
         </View>
       </ImageBackground>
+
+      {/* Modal hiển thị chi tiết sách */}
       <Modal
         transparent={true}
         animationType="slide"
         visible={isModalVisible}
         onRequestClose={() => setModalVisible(false)}
       >
-        <BookDetailCard book={book} onClose={() => setModalVisible(false)} />
+        <BookDetailCard
+          book={book}
+          isCreatedByUser={userId === book.createdBy}
+          onClose={(shouldRefresh = false) => {
+            setModalVisible(false);
+            if (shouldRefresh && onRefresh) {
+              onRefresh(); // 👈 reload danh sách sách từ cha
+            }
+          }}
+        />
       </Modal>
     </TouchableOpacity>
   );

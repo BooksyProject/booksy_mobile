@@ -28,6 +28,118 @@ export async function likeBook(bookId: string, userId: string) {
   return await res.json();
 }
 
+export async function getMyBook(token: string) {
+  try {
+    const res = await fetch(`${BASE_URL}/book/my-books`, {
+      method: "GET",
+      headers: {
+        Authorization: `${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to fetch your books");
+    }
+
+    return await res.json(); // { success: true, data: [...] }
+  } catch (error: any) {
+    console.error("❌ getMyBook error:", error);
+    throw new Error(error.message || "Something went wrong");
+  }
+}
+
+interface CreateBookParams {
+  title: string;
+  author: string;
+  categories: string[];
+  description: string;
+  coverImage: string;
+  fileURL: string;
+  fileType: string;
+}
+
+export async function createBook(params: CreateBookParams, token: string) {
+  try {
+    const res = await fetch(`${BASE_URL}/book/createBook`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify(params),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to create book");
+    }
+
+    return await res.json(); // { message, data }
+  } catch (error: any) {
+    console.error("❌ createBook error:", error);
+    throw new Error(error.message || "Something went wrong");
+  }
+}
+
+export async function deleteBook(bookId: string, token: string) {
+  try {
+    const res = await fetch(`${BASE_URL}/book/${bookId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `${token}`,
+      },
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to delete book");
+    }
+
+    return await res.json(); // { message: "Book deleted successfully" }
+  } catch (error: any) {
+    console.error("❌ deleteBook error:", error);
+    throw new Error(error.message || "Something went wrong");
+  }
+}
+
+export interface UpdateBookParams {
+  title?: string;
+  author?: string;
+  categories?: string[];
+  description?: string;
+  coverImage?: string;
+  fileURL?: string;
+  fileType?: string;
+}
+
+export async function updateBook(
+  bookId: string,
+  updateData: UpdateBookParams,
+  token: string
+) {
+  try {
+    const res = await fetch(`${BASE_URL}/book/${bookId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify(updateData),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.message || "Failed to update book");
+    }
+
+    return await res.json(); // { message, book }
+  } catch (error: any) {
+    console.error("❌ updateBook error:", error);
+    throw new Error(error.message || "Something went wrong");
+  }
+}
+
 export async function unlikeBook(bookId: string, userId: string) {
   const res = await fetch(`${BASE_URL}/book/unlikeBook`, {
     method: "POST", // Sử dụng POST thay vì GET

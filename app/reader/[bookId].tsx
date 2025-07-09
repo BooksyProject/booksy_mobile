@@ -21,9 +21,20 @@ import {
 import Pagination from "@/components/ui/Pagination";
 import { useReaderSettings } from "@/contexts/ReaderSettingContext";
 import { WebView } from "react-native-webview";
-import { ArrowIcon, SettingsIcon } from "@/components/icon/Icons";
+import { ArrowIcon, SendIcon, SettingsIcon } from "@/components/icon/Icons";
+import { MessageCircle } from "lucide-react-native";
+import {
+  createComment,
+  getCommentByChapterId,
+} from "@/lib/service/comment.service";
+import CommentCard from "@/components/card/comment/CommentCard";
+import { useAuth } from "@/contexts/AuthContext";
+import { UserBasicInfo } from "@/dtos/UserDTO";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
+import { CommentResponseDTO } from "@/dtos/CommentDTO";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Input from "@/components/ui/input";
 
 interface ChapterData {
   _id: string;
@@ -59,7 +70,15 @@ export default function ReaderScreen() {
   const { bookId, chapter } = useLocalSearchParams();
   const chapterNumber = Number(chapter || 1);
   const [chapterTotal, setChapterTotal] = useState<number>(0);
-
+  const { profile } = useAuth();
+  const profileBasic: UserBasicInfo = {
+    _id: profile?._id,
+    avatar: profile?.avatar,
+    firstName: profile?.firstName,
+    lastName: profile?.lastName,
+  };
+  const [numberOfComments, setNumberOfComments] = useState(0);
+  const { colorScheme, toggleColorScheme } = useTheme();
   const {
     settings,
     updateTheme,
@@ -69,11 +88,79 @@ export default function ReaderScreen() {
   } = useReaderSettings();
   const isReaderDark = settings.theme === "dark";
   const textColor = isReaderDark ? "#F1EEE3" : "#26212A";
+  const bgColor = isReaderDark ? colors.dark[200] : colors.light[200];
 
   const { save, updateProgress } = useReadingProgressManager(bookId as string);
   const [chapterData, setChapterData] = useState<ChapterData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [bookComments, setBookComments] = useState<any[]>([]);
+  const [showComments, setShowComments] = useState(false);
+  const [comment, setComment] = useState("");
+  const handleOpenComments = async () => {
+    if (!chapterData?._id) return;
+    try {
+      const data = await getCommentByChapterId(chapterData._id);
+      setBookComments(data);
+      setNumberOfComments(data.length); // Cập nhật số lượng
+      setShowComments(true);
+    } catch (error) {
+      console.error("❌ Lỗi khi mở modal và fetch comment:", error);
+    }
+  };
+
+  const handleSendComment = async () => {
+    const token: string | null = await AsyncStorage.getItem("token");
+
+    if (!token) {
+      console.error("User is not authenticated");
+      return;
+    }
+
+    if (!comment.trim()) {
+      console.warn("Comment cannot be empty");
+      return;
+    }
+    if (!chapterData?._id) return;
+    try {
+      const newCommentData = await createComment(
+        { content: comment },
+        token,
+        chapterData?._id
+      );
+
+      const currentTime = new Date();
+      const enrichedComment: CommentResponseDTO = {
+        ...newCommentData,
+        author: {
+          _id: profileBasic?._id,
+          avatar: profileBasic?.avatar || "/assets/images/default-avatar.jpg",
+          firstName: profileBasic?.firstName || "Anonymous",
+          lastName: profileBasic?.lastName || "Anonymous",
+        },
+        createAt: currentTime,
+        likes: [],
+      };
+      // post.comments = [newCommentData._id, ...post.comments];
+
+      setBookComments((prev: any) => [enrichedComment, ...prev]);
+
+      // if (post?.author._id !== profileBasic._id) {
+      //   const notificationParams = {
+      //     senderId: profileBasic._id,
+      //     receiverId: post?.author._id,
+      //     type: "comment",
+      //     postId: post?._id,
+      //   };
+
+      //   await createNotification(notificationParams, token);
+      // }
+      setNumberOfComments(numberOfComments + 1);
+      setComment("");
+    } catch (error) {
+      console.error("Failed to add comment:", error);
+    }
+  };
 
   const getCurrentFontFamily = () => {
     return (
@@ -119,6 +206,8 @@ export default function ReaderScreen() {
           /src="\/([^"]+)"/g,
           `src="${IMAGE_BASE_URL}/$1"`
         );
+
+        console.log(data, "dataaaaaaaaaaaaaaa");
 
         setChapterData({
           ...data,
@@ -201,6 +290,7 @@ export default function ReaderScreen() {
           >
             <ArrowIcon color={textColor} size={27} />
           </TouchableOpacity>
+
           <TouchableOpacity
             onPress={() => setShowSettings(true)}
             className={`p-2 rounded-lg`}
@@ -209,7 +299,12 @@ export default function ReaderScreen() {
           </TouchableOpacity>
         </View>
       </SafeAreaView>
-
+      <TouchableOpacity
+        onPress={handleOpenComments}
+        className="absolute bottom-28 right-4 z-50 bg-white dark:bg-black p-3 rounded-full shadow"
+      >
+        <ArrowIcon color={textColor} size={27} />
+      </TouchableOpacity>
       <ScrollView
         className="flex-1 px-4 pt-6 pb-40"
         contentInsetAdjustmentBehavior="automatic"
@@ -246,6 +341,70 @@ export default function ReaderScreen() {
           }}
         />
       </View>
+
+      <Modal
+        visible={showComments}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowComments(false)}
+      >
+        <SafeAreaView
+          className="flex-1 px-4 pt-6 "
+          style={{ backgroundColor: bgColor }}
+        >
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-xl font-mbold " style={{ color: textColor }}>
+              Comments
+            </Text>
+            <TouchableOpacity onPress={() => setShowComments(false)}>
+              <Ionicons name="close" size={24} color={textColor} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView className="space-y-4">
+            {bookComments.length === 0 ? (
+              <Text className="text-center text-gray-500">No comment yet.</Text>
+            ) : (
+              bookComments.map((comment) => (
+                <View key={comment._id}>
+                  <CommentCard
+                    comment={comment}
+                    commentsData={bookComments}
+                    setCommentsData={setBookComments}
+                    author={comment.author}
+                    chapterId={chapterData._id}
+                    profileBasic={profileBasic}
+                    setNumberOfComments={setNumberOfComments}
+                    numberOfComments={numberOfComments}
+                  />
+                </View>
+              ))
+            )}
+          </ScrollView>
+          <View
+            className="absolute bottom-0 left-0 right-0 px-2 py-2"
+            style={{
+              backgroundColor:
+                colorScheme === "dark" ? colors.dark[200] : colors.light[200],
+            }}
+          >
+            <View className="w-full flex-row items-center space-x-2">
+              <View className="flex-1">
+                <Input
+                  // avatarSrc={profileBasic?.avatar || "/assets/images/capy.jpg"}
+                  placeholder="Write a comment"
+                  readOnly={false}
+                  value={comment}
+                  onChangeText={setComment}
+                />
+              </View>
+              <TouchableOpacity onPress={handleSendComment}>
+                <SendIcon size={27} color={colors.primary[100]} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </Modal>
 
       <Modal
         visible={showSettings}

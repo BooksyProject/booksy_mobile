@@ -66,6 +66,15 @@ const ProfileIcon = ({ color = "currentColor", width = 24, height = 24 }) => (
   </Svg>
 );
 
+const MyBookIcon = ({ color = "currentColor", width = 24, height = 24 }) => (
+  <Svg width={width} height={height} viewBox="0 0 24 24" fill="none">
+    <Path
+      fill={color}
+      d="M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12V2H6Zm2 4h6v2H8V6Zm0 4h6v2H8v-2Z"
+    />
+  </Svg>
+);
+
 const TabsLayout = () => {
   const { colorScheme } = useTheme();
 
@@ -140,6 +149,21 @@ const TabsLayout = () => {
           ),
         }}
       />
+      <Tabs.Screen
+        name="my-book"
+        options={{
+          title: "My Book",
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon
+              SvgIcon={MyBookIcon}
+              color={color}
+              focused={focused}
+              name="MyBook"
+            />
+          ),
+        }}
+      />
+
       <Tabs.Screen
         name="profile"
         options={{

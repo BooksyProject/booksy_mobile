@@ -14,7 +14,13 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { downloadBook, likeBook, unlikeBook } from "@/lib/service/book.service";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
-import { ArrowIcon, DownloadIcon, LikeIcon, ShareIcon } from "../../icon/Icons";
+import {
+  ArrowIcon,
+  DownloadIcon,
+  LikeIcon,
+  PenIcon,
+  ShareIcon,
+} from "../../icon/Icons";
 import CircleIconButton from "../../ui/circle-icon-button";
 interface StatItemProps {
   label: string;
@@ -32,6 +38,7 @@ interface Props {
   categories: CategoryResponseDTO[];
   fileURL: string;
   onClose: () => void;
+  onEdit?: () => void;
 }
 
 export default function BookHeaderCard({
@@ -45,6 +52,7 @@ export default function BookHeaderCard({
   categories,
   fileURL,
   onClose,
+  onEdit,
 }: Props) {
   const [isBookmarked, setIsBookmarked] = useState(false);
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
@@ -237,6 +245,15 @@ Một cuốn sách tuyệt vời! Tải ngay app của chúng tôi để đọc.
             >
               <LikeIcon size={27} color={bgColor} filled={isBookmarked} />
             </TouchableOpacity>
+            {onEdit && (
+              <CircleIconButton
+                icon={PenIcon}
+                onPress={onEdit}
+                // bgColor={bgColor
+                // }
+                iconColor={bgColor}
+              />
+            )}
             {/* <CircleIconButton
               icon={DownloadIcon}
               onPress={() => downloadBook(_id)}
