@@ -183,9 +183,10 @@ const BookDetailCard: React.FC<BookDetailCardProps> = ({
         coverImage={bookDetail.coverImage}
         categories={bookDetail.categories}
         likes={bookDetail.likes}
-        chapters={chapters.length}
+        chapters={chapters}
         views={bookDetail.views}
         fileURL={bookDetail.fileURL}
+        description={bookDetail.description}
         onClose={onClose}
         onEdit={() => {
           setEditTitle(bookDetail.title);

@@ -1,4 +1,18 @@
 // timeUtils.js
+import { Platform } from "react-native";
+import ReactNativeBlobUtil from "react-native-blob-util";
+
+import { unzip } from "react-native-zip-archive";
+
+interface SaveFileOptions {
+  fileUrl: string;
+  onProgress: (
+    progress: number,
+    downloadedBytes: number,
+    totalBytes: number
+  ) => void;
+}
+
 export const getTimeAgo = (time: any) => {
   const now = Date.now(); // Lấy thời gian hiện tại dưới dạng mili giây
   const messageTime = new Date(time).getTime();
@@ -120,5 +134,75 @@ export const generateRandomNumberString = (length: number) => {
     result += characters.charAt(randomIndex);
 
     return result;
+  }
+};
+
+// Định nghĩa interface thống nhất
+interface ProgressCallback {
+  (progress: number, downloadedBytes: number, totalBytes: number): void;
+}
+
+interface SaveFileOptions {
+  fileUrl: string;
+  onPgr?: ProgressCallback; // Optional callback
+}
+
+interface SaveFileResult {
+  filePath: string;
+  fileSize: number;
+}
+export const saveFile = async (
+  options: SaveFileOptions
+): Promise<SaveFileResult> => {
+  const { fileUrl, onProgress } = options;
+
+  try {
+    // 1. Tạo thư mục nếu chưa tồn tại
+    const dirs = ReactNativeBlobUtil.fs.dirs;
+    const downloadDir =
+      Platform.OS === "ios" ? dirs.DocumentDir : dirs.DownloadDir;
+    const bookDir = `${downloadDir}/Books`;
+
+    const exists = await ReactNativeBlobUtil.fs.exists(bookDir);
+    if (!exists) {
+      await ReactNativeBlobUtil.fs.mkdir(bookDir);
+    }
+
+    // 2. Tải file
+    const fileName = fileUrl.split("/").pop() || `book_${Date.now()}`;
+    const filePath = `${bookDir}/${fileName}`;
+
+    const response = await ReactNativeBlobUtil.config({
+      fileCache: true,
+      path: filePath,
+    })
+      .fetch("GET", fileUrl)
+      .progress((received, total) => {
+        const progress = Math.floor((Number(received) / Number(total)) * 100);
+        onProgress?.(progress, Number(received), Number(total));
+      });
+
+    // 3. Nếu là EPUB thì unzip
+    if (/\.epub$/i.test(fileName)) {
+      const unzipPath = `${bookDir}/${fileName.replace(/\.epub$/i, "")}`;
+      await unzip(response.path(), unzipPath);
+      const fileInfo = await ReactNativeBlobUtil.fs.stat(unzipPath);
+      return {
+        filePath: unzipPath,
+        fileSize: Number(fileInfo.size),
+      };
+    }
+
+    // 4. Trả kết quả cho các định dạng khác
+    const fileInfo = await ReactNativeBlobUtil.fs.stat(response.path());
+    return {
+      filePath: response.path(),
+      fileSize: Number(fileInfo.size),
+    };
+  } catch (error) {
+    console.error("Save file error:", error);
+    throw new Error(
+      error instanceof Error ? error.message : "Failed to save file"
+    );
   }
 };

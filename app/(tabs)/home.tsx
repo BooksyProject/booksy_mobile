@@ -1,4 +1,3 @@
-
 import { View, Text, TouchableOpacity, ScrollView, Alert } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
@@ -183,7 +182,7 @@ const Home = () => {
           contentContainerStyle={{ paddingVertical: 8 }}
         >
           {continueReadingBooks.map((book) => (
-            <LibraryBookCard key={book._id} book={book} />
+            <LibraryBookCard key={book._id} book={book} isOffline={false} />
           ))}
         </ScrollView>
       ) : (
