@@ -68,7 +68,7 @@ import { useReadingProgress } from "@/contexts/ReadingProgressContext";
 import { saveOnlineProgress } from "@/lib/service/readingProgress.service";
 
 // Cache Management
-const chapterCache = new Map<string, ChapterData>();
+export const chapterCache = new Map<string, ChapterData>();
 const bookmarkCache = new Map<string, BookmarkData[]>();
 const chapterTotalCache = new Map<string, number>();
 

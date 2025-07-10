@@ -1,13 +1,6 @@
 // components/modal/chapter/EditChapterModal.tsx
 import { useState, useEffect } from "react";
-import {
-  Modal,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { Modal, View, Text, Alert } from "react-native";
 import { ChapterInf } from "@/dtos/ChapterDTO";
 import { updateChapter } from "@/lib/service/chapter.service";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -18,6 +11,9 @@ import { CloseIcon } from "@/components/icon/Icons";
 import Input from "@/components/ui/input";
 import Textarea from "@/components/ui/textarea";
 import Button from "@/components/ui/button";
+import { chapterCache } from "@/app/reader/[bookId]";
+
+// ✅ Import cache
 
 interface EditChapterModalProps {
   visible: boolean;
@@ -59,8 +55,17 @@ export default function EditChapterModal({
         { chapterTitle: title, content },
         token
       );
+
       if (res.status) {
         Alert.alert("Success", "Chapter updated successfully");
+
+        // ✅ Xoá cache chương tương ứng
+        const cacheKey = `${chapter._id}_${chapter.chapterNumber}`;
+        if (chapterCache.has(cacheKey)) {
+          chapterCache.delete(cacheKey);
+          console.log("🧹 Cache cleared for", cacheKey);
+        }
+
         onUpdated({ ...chapter, chapterTitle: title, content });
         onClose();
       } else {
@@ -83,6 +88,7 @@ export default function EditChapterModal({
           </Text>
           <CircleIconButton icon={CloseIcon} onPress={onClose} />
         </View>
+
         <View className="relative mb-5">
           <View
             className="absolute left-3 -top-2 px-1 z-10"
@@ -105,6 +111,7 @@ export default function EditChapterModal({
             fontFamily="Montserrat-Regular"
           />
         </View>
+
         <View className="relative mb-5">
           <View
             className="absolute left-3 -top-2 px-1 z-10"
@@ -114,7 +121,7 @@ export default function EditChapterModal({
               className="text-xs font-mregular"
               style={{ color: textColor }}
             >
-              Chapter Title <Text className="text-red-500">*</Text>
+              Chapter Content <Text className="text-red-500">*</Text>
             </Text>
           </View>
           <Textarea
@@ -125,6 +132,7 @@ export default function EditChapterModal({
             numberOfLines={10}
           />
         </View>
+
         <View className="flex-row justify-between mt-6">
           <View className="flex-1 ml-2">
             <Button title={"Update chapter"} onPress={handleUpdate} />
