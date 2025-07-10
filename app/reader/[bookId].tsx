@@ -66,7 +66,7 @@ import { CommentResponseDTO } from "@/dtos/CommentDTO";
 import Input from "@/components/ui/input";
 
 // Cache Management
-const chapterCache = new Map<string, ChapterData>();
+export const chapterCache = new Map<string, ChapterData>();
 const bookmarkCache = new Map<string, BookmarkData[]>();
 const chapterTotalCache = new Map<string, number>();
 
