@@ -126,7 +126,7 @@ export default function ReaderScreen() {
   const paragraphPositions = useRef<Record<number, number>>({});
 
   // Params
-  const { bookId, chapter, position } = useLocalSearchParams();
+  const { bookId, chapter, position, t } = useLocalSearchParams();
   const chapterNumber = Number(chapter || 1);
   const bookmarkPosition = Number(position || 0);
 
@@ -304,7 +304,7 @@ export default function ReaderScreen() {
     } finally {
       setLoading(false);
     }
-  }, [bookId, chapterNumber, getChapterCacheKey]);
+  }, [bookId, chapterNumber, t, getChapterCacheKey]);
 
   const fetchChapterTotal = useCallback(async () => {
     if (!bookId) return;
