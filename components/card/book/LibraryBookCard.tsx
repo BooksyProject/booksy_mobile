@@ -17,139 +17,7 @@ import { OfflineBookService } from "@/lib/service/book.service";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useLibrary } from "@/contexts/LibaryContext";
-
-// interface LibraryBookCardProps {
-//   book: any & {
-//     totalChapters?: number;
-//     readingProgress?: {
-//       chapterId: string;
-//       chapterNumber: number;
-//       percentage: number;
-//       lastReadAt?: Date;
-//     } | null;
-//     filePath?: string; // Cho sách offline
-//   };
-//   isOffline?: boolean;
-// }
-
-// const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
-//   book,
-//   isOffline = false,
-// }) => {
-//   const { colorScheme } = useTheme();
-//   const goToReader = useGoToReader();
-
-//   // Kiểm tra xem có phải sách offline không
-//   const isOfflineBook =
-//     isOffline || !!book.filePath || OfflineBookService.isOfflineBook(book._id);
-//   const progress = book.readingProgress?.percentage || 0;
-
-//   const handleOpenReader = () => {
-//     const chapterToRead = book.readingProgress?.chapterNumber || 1;
-//     goToReader(book._id, chapterToRead);
-//   };
-
-//   const getProgressColor = () => {
-//     if (isOfflineBook) {
-//       return "#4CAF50"; // Xanh lá cho offline
-//     }
-//     return "#B33A3A"; // Đỏ cho online
-//   };
-
-//   const getStatusText = () => {
-//     if (isOfflineBook) {
-//       return "📥 Đã tải về";
-//     }
-//     return "🌐 Online";
-//   };
-
-//   const getStatusColor = () => {
-//     if (isOfflineBook) {
-//       return "#4CAF50";
-//     }
-//     return "#2196F3";
-//   };
-
-//   return (
-//     <TouchableOpacity
-//       onPress={handleOpenReader}
-//       className="w-[166px] h-[235px] rounded-5 overflow-hidden mr-4"
-//       activeOpacity={0.9}
-//     >
-//       <ImageBackground
-//         source={{ uri: book?.coverImage }}
-//         className="flex-1 justify-end"
-//         imageStyle={{ borderRadius: 5 }}
-//       >
-//         <View className="h-[70px] justify-center mx-1 my-1">
-//           {Platform.OS === "ios" ? (
-//             <BlurView blurType="light" blurAmount={10} style={styles.blur} />
-//           ) : (
-//             <View
-//               style={[
-//                 styles.blur,
-//                 { backgroundColor: "rgba(255,255,255,0.75)" },
-//               ]}
-//             />
-//           )}
-
-//           <View className="flex-row items-center justify-between px-3 gap-2">
-//             <View className="flex-1">
-//               <Text
-//                 className="text-[16px] text-dark-200 font-semibold max-w-[130px]"
-//                 numberOfLines={1}
-//               >
-//                 {book.title}
-//               </Text>
-//               <Text
-//                 className="text-xs text-primary-100 max-w-[130px]"
-//                 numberOfLines={1}
-//               >
-//                 {book.author}
-//               </Text>
-
-//               {/* Status indicator */}
-//               <Text
-//                 style={{
-//                   fontSize: 10,
-//                   color: getStatusColor(),
-//                   fontWeight: "bold",
-//                   marginTop: 2,
-//                 }}
-//               >
-//                 {getStatusText()}
-//               </Text>
-
-//               {/* Progress bar */}
-//               {book.readingProgress && (
-//                 <View style={styles.progressContainer}>
-//                   <View style={styles.progressBarBackground}>
-//                     <View
-//                       style={[
-//                         styles.progressBarFill,
-//                         {
-//                           width: `${Math.round(progress)}%`,
-//                           backgroundColor: getProgressColor(),
-//                         },
-//                       ]}
-//                     />
-//                   </View>
-//                   <Text
-//                     style={[styles.progressText, { color: getProgressColor() }]}
-//                   >
-//                     {Math.round(progress)}%
-//                   </Text>
-//                 </View>
-//               )}
-//             </View>
-//           </View>
-//         </View>
-//       </ImageBackground>
-//     </TouchableOpacity>
-//   );
-// };
-
-// components/LibraryBookCard.tsx - Cập nhật với chức năng xóa
+import { useReadingProgress } from "@/contexts/ReadingProgressContext";
 
 interface LibraryBookCardProps {
   book: any & {
@@ -177,6 +45,7 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [fileSize, setFileSize] = useState<string>("");
   const { removeBookFromLibrary } = useLibrary();
+  const { readingProgress } = useReadingProgress();
   // Kiểm tra xem có phải sách offline không
   const isOfflineBook =
     isOffline || !!book.filePath || OfflineBookService.isOfflineBook(book._id);
@@ -189,6 +58,7 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
       setFileSize(OfflineBookService.formatFileSize(size));
     }
   };
+
   const handleOpenReader = async () => {
     // Kiểm tra xem có phải sách offline không (dựa vào book._id hoặc book.source)
     const isOffline =
@@ -217,7 +87,18 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
       }
     } else {
       // Xử lý bình thường cho sách online
-      const chapterToRead = book.readingProgress?.chapterNumber || 1;
+      const progressKey = `${book._id}`;
+      const savedProgress = await AsyncStorage.getItem(progressKey);
+      let chapterToRead = 1; // Mặc định là chương 1
+
+      if (savedProgress) {
+        const progress = JSON.parse(savedProgress);
+        chapterToRead = progress.lastReadChapter || 1;
+        console.log("📖 Đã load tiến trình đọc offline:", progress);
+      } else {
+        chapterToRead = readingProgress?.chapterNumber || 1;
+      }
+
       goToReader(book._id, chapterToRead);
     }
   };

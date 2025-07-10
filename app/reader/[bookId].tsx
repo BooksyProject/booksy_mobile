@@ -64,6 +64,8 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { colors } from "@/styles/colors";
 import { CommentResponseDTO } from "@/dtos/CommentDTO";
 import Input from "@/components/ui/input";
+import { useReadingProgress } from "@/contexts/ReadingProgressContext";
+import { saveOnlineProgress } from "@/lib/service/readingProgress.service";
 
 // Cache Management
 export const chapterCache = new Map<string, ChapterData>();
@@ -152,6 +154,34 @@ export default function ReaderScreen() {
   // Hooks  const { profile } = useAuth();
   const [profileBasic, setProfileBasic] = useState<UserBasicInfo | null>(null);
 
+  const [numberOfComments, setNumberOfComments] = useState(0);
+  const { colorScheme, toggleColorScheme } = useTheme();
+  const {
+    settings,
+    updateTheme,
+    updateFont,
+    updateFontSize,
+    isLoading: settingsLoading,
+  } = useReaderSettings();
+  const { updateReadingProgress } = useReadingProgress();
+
+  const { save, updateProgress } = useReadingProgressManager(bookId as string);
+
+  // Memoized values
+  const isReaderDark = useMemo(
+    () => settings.theme === "dark",
+    [settings.theme]
+  );
+  const textColor = useMemo(
+    () => (isReaderDark ? "#F1EEE3" : "#26212A"),
+    [isReaderDark]
+  );
+
+  const bgColor = isReaderDark ? colors.dark[200] : colors.light[200];
+  const [bookComments, setBookComments] = useState<any[]>([]);
+  const [showComments, setShowComments] = useState(false);
+  const [comment, setComment] = useState("");
+
   useEffect(() => {
     const loadProfile = async () => {
       try {
@@ -173,35 +203,6 @@ export default function ReaderScreen() {
 
     loadProfile();
   }, []);
-
-  const [numberOfComments, setNumberOfComments] = useState(0);
-  const { colorScheme, toggleColorScheme } = useTheme();
-  const {
-    settings,
-    updateTheme,
-    updateFont,
-    updateFontSize,
-    isLoading: settingsLoading,
-  } = useReaderSettings();
-  // const isReaderDark = settings.theme === "dark";
-  // const textColor = isReaderDark ? "#F1EEE3" : "#26212A";
-
-  const { save, updateProgress } = useReadingProgressManager(bookId as string);
-
-  // Memoized values
-  const isReaderDark = useMemo(
-    () => settings.theme === "dark",
-    [settings.theme]
-  );
-  const textColor = useMemo(
-    () => (isReaderDark ? "#F1EEE3" : "#26212A"),
-    [isReaderDark]
-  );
-
-  const bgColor = isReaderDark ? colors.dark[200] : colors.light[200];
-  const [bookComments, setBookComments] = useState<any[]>([]);
-  const [showComments, setShowComments] = useState(false);
-  const [comment, setComment] = useState("");
 
   const getCurrentFontFamily = useCallback(() => {
     return (
@@ -414,22 +415,8 @@ export default function ReaderScreen() {
       if (position > 0.8 && renderChunks * CHUNK_SIZE < paragraphs.length) {
         loadMoreChunks();
       }
-
-      if (chapterData?._id) {
-        updateProgress(
-          chapterData._id,
-          chapterData.chapterNumber,
-          position * 100
-        );
-      }
     },
-    [
-      chapterData,
-      updateProgress,
-      loadMoreChunks,
-      paragraphs.length,
-      renderChunks,
-    ]
+    [chapterData, loadMoreChunks, paragraphs.length, renderChunks]
   );
 
   const handleAddBookmark = useCallback(async () => {
@@ -535,9 +522,22 @@ export default function ReaderScreen() {
   );
 
   const goToChapter = useCallback(
-    (newChapter: number) => {
-      if (chapterData?._id) {
-        updateProgress(chapterData._id, chapterData.chapterNumber, 100);
+    async (newChapter: number) => {
+      if (chapterData) {
+        await saveOnlineProgress(bookId as string, newChapter, 100);
+        save({
+          chapterId: chapterData._id,
+          chapterNumber: newChapter,
+          percentage: 100,
+        });
+
+        updateReadingProgress({
+          bookId: String(bookId),
+          chapterId: chapterData._id,
+          chapterNumber: newChapter,
+          percentage: 100,
+          lastReadAt: new Date(),
+        });
       }
       router.replace({
         pathname: "/reader/[bookId]",
@@ -644,20 +644,18 @@ export default function ReaderScreen() {
     }
   }, [bookmarkPosition, chapterData, contentReady]);
 
-  useEffect(() => {
-    if (!chapterData?._id) return;
+  // useEffect(() => {
+  //   if (!chapterData?._id) return;
 
-    const saveProgress = () => {
-      save({
-        chapterId: chapterData._id,
-        chapterNumber: chapterData.chapterNumber,
-        percentage: 100,
-      });
-    };
+  //   const saveProgress = async () => {
+  //     await AsyncStorage.setItem(
+  //       "lastReadChapter",
+  //       JSON.stringify(chapterData)
+  //     );
+  //   };
 
-    saveProgress();
-    return saveProgress;
-  }, [chapterData, save]);
+  //   saveProgress();
+  // }, [chapterData]);
 
   // Hàm để lưu vị trí của mỗi paragraph
   const onParagraphLayout = useCallback((index: number, event: any) => {
